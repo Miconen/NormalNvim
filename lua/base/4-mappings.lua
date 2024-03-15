@@ -219,34 +219,27 @@ maps.x["G"] = {
 -- packages -----------------------------------------------------------------
 -- lazy
 maps.n["<leader>p"] = icons.p
-maps.n["<leader>pi"] =
-  { function() require("lazy").install() end, desc = "Plugins Install" }
-maps.n["<leader>ps"] =
-  { function() require("lazy").home() end, desc = "Plugins Status" }
-maps.n["<leader>pS"] =
-  { function() require("lazy").sync() end, desc = "Plugins Sync" }
 maps.n["<leader>pu"] =
-  { function() require("lazy").check() end, desc = "Plugins Check Updates" }
+  { function() require("lazy").check() end, desc = "Lazy open" }
 maps.n["<leader>pU"] =
-  { function() require("lazy").update() end, desc = "Plugins Update" }
+  { function() require("lazy").update() end, desc = "Lazy update" }
 
 -- mason
 if is_available "mason.nvim" then
-  maps.n["<leader>pm"] = { "<cmd>Mason<cr>", desc = "Mason Install" }
-  maps.n["<leader>pM"] = { "<cmd>MasonUpdateAll<cr>", desc = "Mason Update" }
+  maps.n["<leader>pm"] = { "<cmd>Mason<cr>", desc = "Mason open" }
+  maps.n["<leader>pM"] = { "<cmd>MasonUpdateAll<cr>", desc = "Mason update" }
 end
 
 -- treesitter
 if is_available "nvim-treesitter" then
-  maps.n["<leader>pt"] = { "<cmd>TSUpdate<cr>", desc = "Treesitter Update" }
+  maps.n["<leader>pT"] = { "<cmd>TSUpdate<cr>", desc = "Treesitter update" }
+  maps.n["<leader>pt"] = { "<cmd>TSInstallInfo<cr>", desc = "Treesitter open" }
 end
 
 -- nvim updater
-maps.n["<leader>pa"] =
-{ "<cmd>NvimUpdatePlugins<cr>", desc = "Update Plugins and Mason" }
-maps.n["<leader>pD"] = { "<cmd>NvimDistroUpdate<cr>", desc = "Distro update" }
-maps.n["<leader>pv"] = { "<cmd>NvimVersion<cr>", desc = "Distro version" }
-maps.n["<leader>pc"] = { "<cmd>NvimChangelog<cr>", desc = "Distro Changelog" }
+maps.n["<leader>pD"] = { "<cmd>DistroUpdate<cr>", desc = "Distro update" }
+maps.n["<leader>pv"] = { "<cmd>DistroReadVersion<cr>", desc = "Distro version" }
+maps.n["<leader>pc"] = { "<cmd>DistroReadChangelog<cr>", desc = "Distro changelog" }
 
 -- tabs
 maps.n["]t"] = { function() vim.cmd.tabnext() end, desc = "Next tab" }
@@ -962,11 +955,11 @@ if is_available "neotest" then
   }
   maps.n["<leader>Tt"] = {
     function() require("neotest").summary.toggle() end,
-    desc = "neotest summary",
+    desc = "Neotest summary",
   }
   maps.n["<leader>TT"] = {
     function() require("neotest").output_panel.toggle() end,
-    desc = "output panel",
+    desc = "Output panel",
   }
 end
 
@@ -1093,11 +1086,20 @@ end
 -- A function we call from the script to start lsp.
 ---@return table lsp_mappings #
 function M.lsp_mappings(client, bufnr)
-  local lsp_mappings = require("base.utils").get_mappings_template()
-  local has_capability = require("base.utils.lsp").has_capability
+  --- Helper function to check if any active LSP clients
+  --- given a filter provide a specific capability.
+  ---@param capability string The server capability to check for (example: "documentFormattingProvider").
+  ---@param filter vim.lsp.get_active_clients.filter|nil A valid get_active_clients filter (see function docs).
+  ---@return boolean # `true` if any of the clients provide the capability.
+  local function has_capability(capability, filter)
+    for _, lsp_client in ipairs(vim.lsp.get_active_clients(filter)) do
+      if lsp_client.supports_method(capability) then return true end
+    end
+    return false
+  end
 
-  -- lsp_mappings.n["<leader>ld"] = { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
-  -- lsp_mappings.n["gl"] = { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
+  local lsp_mappings = require("base.utils").get_mappings_template()
+  lsp_mappings.n["<leader>ld"] = { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
   lsp_mappings.n["gE"] = { function() vim.diagnostic.goto_prev() end, desc = "Previous diagnostic" }
   lsp_mappings.n["ge"] = { function() vim.diagnostic.goto_next() end, desc = "Next diagnostic" }
 

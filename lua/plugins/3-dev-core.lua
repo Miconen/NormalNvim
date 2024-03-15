@@ -210,8 +210,10 @@ return {
 
   --  mason [lsp package manager]
   --  https://github.com/williamboman/mason.nvim
+  --  https://github.com/Zeioth/mason-extra-cmds
   {
     "williamboman/mason.nvim",
+    dependencies = { "Zeioth/mason-extra-cmds", opts = {} },
     cmd = {
       "Mason",
       "MasonInstall",
@@ -219,7 +221,7 @@ return {
       "MasonUninstallAll",
       "MasonLog",
       "MasonUpdate",
-      "MasonUpdateAll",
+      "MasonUpdateAll", -- this cmd is provided by mason-extra-cmds
     },
     opts = {
       ui = {
@@ -229,83 +231,52 @@ return {
           package_pending = "⟳",
         },
       },
-    },
-    build = ":MasonUpdate",
-    config = function(_, opts)
-      local updater = require("distroupdate.utils.mason")
-      require("mason").setup(opts)
-      local cmd = vim.api.nvim_create_user_command
-      cmd("MasonUpdate", function(options) updater.update(options.fargs) end, {
-        nargs = "*",
-        desc = "Update Mason Package",
-        complete = function(arg_lead)
-          local _ = require "mason-core.functional"
-          return _.sort_by(
-            _.identity,
-            _.filter(_.starts_with(arg_lead), require("mason-registry").get_installed_package_names())
-          )
-        end,
-      })
-      cmd(
-        "MasonUpdateAll", function() updater.update_all() end,
-        { desc = "Update Mason Packages" }
-      )
-
-      for _, plugin in ipairs {
-        "mason-lspconfig",
-        "mason-null-ls",
-        "mason-nvim-dap",
-      } do
-        pcall(require, plugin)
-      end
-    end,
+    }
   },
 
   --  Schema Store [lsp schema manager]
   --  https://github.com/b0o/SchemaStore.nvim
   "b0o/SchemaStore.nvim",
 
+  -- mason-null-ls.nivm
+  -- https://github.com/jay-babu/mason-null-ls.nvim
+  -- Allows none-ls to use clients installed by mason.
+  {
+    "jay-babu/mason-null-ls.nvim",
+    cmd = {
+      "NullLsInstall",
+      "NullLsUninstall",
+      "NoneLsInstall",
+      "NoneLsUninstall"
+    },
+    opts = { handlers = {} },
+  },
+
   --  none-ls [lsp code formatting]
   --  https://github.com/nvimtools/none-ls.nvim
   {
     "nvimtools/none-ls.nvim",
-    dependencies = {
-      {
-        "jay-babu/mason-null-ls.nvim",
-        cmd = {
-          "NullLsInstall", "NullLsUninstall", "NoneLsInstall", "NoneLsUninstall"
-        },
-        opts = { handlers = {} },
-      },
-    },
+    dependencies = { "jay-babu/mason-null-ls.nvim" },
     event = "User BaseFile",
     opts = function()
-      local nls = require "null-ls"
-      return {
-        sources = {
-          -- You can customize your formatters here.
-          nls.builtins.formatting.shfmt.with {
-            command = "shfmt",
-            args = { "-i", "2", "-filename", "$FILENAME" },
-          },
-          -- https://github.com/bash-lsp/bash-language-server/issues/933
-          -- TODO: Disable the next feature once this has been merged.
-          nls.builtins.code_actions.shellcheck,
-          nls.builtins.diagnostics.shellcheck.with { diagnostics_format = "" },
-        },
-        on_attach = utils_lsp.apply_user_lsp_mappings,
-      }
-    end,
+      -- You can customize your formatters here.
+      local nls = require("null-ls")
+      nls.builtins.formatting.shfmt.with({
+        command = "shfmt",
+        args = { "-i", "2", "-filename", "$FILENAME" },
+      })
+
+      -- Attach the user lsp mappings to every none-ls client.
+      return { on_attach = utils_lsp.apply_user_lsp_mappings }
+    end
   },
 
   --  neodev.nvim [lsp for nvim lua api]
   --  https://github.com/folke/neodev.nvim
   {
     "folke/neodev.nvim",
-    opts = {},
-    config = function(_, opts)
-      require("neodev").setup(opts)
-    end,
+    ft = { "lua" },
+    opts = {}
   },
 
   --  garbage-day.nvim [lsp garbage collector]
@@ -318,7 +289,7 @@ return {
       excluded_lsp_clients = {
         "null-ls", "jdtls"
       },
-      grace_period = (60*10),
+      grace_period = (60*15),
       wakeup_delay = 3000,
       notifications = false,
       retries = 3,
@@ -339,34 +310,40 @@ return {
     },
     event = "InsertEnter",
     opts = function()
+      -- ensure dependencies exist
       local cmp = require "cmp"
-      local snip_status_ok, luasnip = pcall(require, "luasnip")
-      local lspkind_status_ok, lspkind = pcall(require, "lspkind")
-      if not snip_status_ok then return end
+      local luasnip = require("luasnip")
+      local lspkind = require("lspkind")
+
+      -- border opts
       local border_opts = {
         border = "rounded",
         winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
       }
 
+      -- helper
       local function has_words_before()
         local line, col = (unpack or table.unpack)(vim.api.nvim_win_get_cursor(0))
         return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match "%s" == nil
       end
 
       return {
-        enabled = function()
-          local dap_prompt = utils.is_available("cmp-dap") -- add interoperability with cmp-dap
-            and vim.tbl_contains(
-              { "dap-repl", "dapui_watches", "dapui_hover" },
-              vim.api.nvim_get_option_value("filetype", { buf = 0 })
-            )
-          if vim.api.nvim_get_option_value("buftype", { buf = 0 }) == "prompt" and not dap_prompt then return false end
-          return vim.g.cmp_enabled
+        enabled = function() -- disable in certain cases on dap.
+          local is_buftype_prompt = vim.bo.buftype == "prompt"
+          local is_disabled_filetype = utils.is_available("cmp-dap")
+              and vim.tbl_contains({ "dap-repl", "dapui_watches", "dapui_hover" },
+                vim.bo.filetype)
+
+          if not is_disabled_filetype or is_buftype_prompt then
+            return vim.g.cmp_enabled
+          else
+            return false
+          end
         end,
         preselect = cmp.PreselectMode.None,
         formatting = {
           fields = { "kind", "abbr", "menu" },
-          format = lspkind_status_ok and lspkind.cmp_format(utils.plugin_opts "lspkind.nvim") or nil,
+          format = lspkind.cmp_format(utils.plugin_opts("lspkind.nvim")),
         },
         snippet = {
           expand = function(args) luasnip.lsp_expand(args.body) end,

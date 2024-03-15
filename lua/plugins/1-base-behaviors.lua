@@ -15,7 +15,7 @@
 --       -> neotree file browser   [neotree]
 --       -> nvim-ufo               [folding mod]
 --       -> nvim-neoclip           [nvim clipboard]
---       -> zen.nvim               [distraction free mode]
+--       -> zen-mode.nvim          [distraction free mode]
 --       -> suda.vim               [write as sudo]
 --       -> vim-matchup            [Improved % motion]
 --       -> hop.nvim               [go to word visually]
@@ -542,7 +542,7 @@ return {
 
   --  nvim-neoclip [nvim clipboard]
   --  https://github.com/AckslD/nvim-neoclip.lua
-  --  By default registers are deleted between sessions.
+  --  Read their docs to enable cross-session history.
   {
     "AckslD/nvim-neoclip.lua",
     requires = 'nvim-telescope/telescope.nvim',
@@ -550,7 +550,7 @@ return {
     opts = {}
   },
 
-  --  zen-mode.nivm [distraction free mode]
+  --  zen-mode.nvim [distraction free mode]
   --  https://github.com/folke/zen-mode.nvim
   {
     "folke/zen-mode.nvim",
@@ -652,15 +652,15 @@ return {
   -- https://github.com/Zeioth/distroupdate.nvim
   {
     "Zeioth/distroupdate.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    dependencies = {
+      "nvim-lua/plenary.nvim"
+    },
     cmd = {
-      "NvimChangelog",
-      "NvimDistroUpdate",
-      "NvimFreezePluginVersions",
-      "NvimRollbackCreate",
-      "NvimRollbackRestore",
-      "NvimUpdatePlugins",
-      "NvimVersions"
+      "DistroFreezePluginVersions",
+      "DistroReadChangelog",
+      "DistroReadVersion",
+      "DistroUpdate",
+      "DistroUpdateRevert"
     },
     opts = function()
       local utils = require "base.utils"

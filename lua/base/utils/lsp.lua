@@ -8,31 +8,15 @@
 --  can be tweaked on the file `../1-options.lua`.
 --  Take this into consideration to minimize the risk of breaking stuff.
 
---    Helpers:
---      -> M.has_capability     → Returns true if the client has the capability.
-
 --    Functions:
 --      -> M.apply_default_lsp_settings  → Apply our default lsp settings.
---      -> M.apply_user_lsp_mappings     → Apply our lsp keymappings.
+--      -> M.apply_user_lsp_mappings     → Apply the user lsp keymappings.
 --      -> M.apply_user_lsp_settings     → Apply the user lsp settings.
---      -> M.setup                       → Gives the user settings to lspconfig.
+--      -> M.setup                       → It passes the user lsp settings to lspconfig.
 
 local M = {}
 local utils = require "base.utils"
 local stored_handlers = {}
-
-
---- Helper function to check if any active LSP clients
---- given a filter provide a specific capability.
----@param capability string The server capability to check for (example: "documentFormattingProvider").
----@param filter vim.lsp.get_active_clients.filter|nil A valid get_active_clients filter (see function docs).
----@return boolean # `true` if any of the clients provide the capability.
-function M.has_capability(capability, filter)
-  for _, client in ipairs(vim.lsp.get_active_clients(filter)) do
-    if client.supports_method(capability) then return true end
-  end
-  return false
-end
 
 --- Apply default settings for diagnostics, formatting, and lsp capabilities.
 --- It only need to be executed once, normally on mason-lspconfig.
@@ -106,7 +90,6 @@ M.apply_default_lsp_settings = function()
   }
   vim.diagnostic.config(M.diagnostics[vim.g.diagnostics_mode])
 
-
   -- Apply formatting settings
   M.formatting = { format_on_save = { enabled = true }, disabled = {} }
   if type(M.formatting.format_on_save) == "boolean" then
@@ -122,24 +105,10 @@ M.apply_default_lsp_settings = function()
     return not (vim.tbl_contains(disabled, client.name) or (type(filter) == "function" and not filter(client)))
   end
 
-  --- Apply the default LSP capabilities
-  M.capabilities = vim.lsp.protocol.make_client_capabilities()
-  M.capabilities.textDocument.completion.completionItem.documentationFormat = { "markdown", "plaintext" }
-  M.capabilities.textDocument.completion.completionItem.snippetSupport = true
-  M.capabilities.textDocument.completion.completionItem.preselectSupport = true
-  M.capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
-  M.capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
-  M.capabilities.textDocument.completion.completionItem.deprecatedSupport = true
-  M.capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
-  M.capabilities.textDocument.completion.completionItem.tagSupport = { valueSet = { 1 } }
-  M.capabilities.textDocument.completion.completionItem.resolveSupport =
-  { properties = { "documentation", "detail", "additionalTextEdits" } }
-  M.capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
-  M.flags = {}
 end
 
 --- This function has the sole purpose of passing the lsp keymappings to lsp.
---- We have this function, bucause we use it on none-ls.
+--- We have this function, because we use it on none-ls.
 ---@param client string The client where the lsp mappings will load.
 ---@param bufnr string The bufnr where the lsp mappings will load.
 function M.apply_user_lsp_mappings(client, bufnr)
@@ -157,24 +126,36 @@ end
 function M.apply_user_lsp_settings(server_name)
   local server = require("lspconfig")[server_name]
 
-  -- Define user server rules.
+  -- Define user server capabilities.
+  M.capabilities = vim.lsp.protocol.make_client_capabilities()
+  M.capabilities.textDocument.completion.completionItem.documentationFormat = { "markdown", "plaintext" }
+  M.capabilities.textDocument.completion.completionItem.snippetSupport = true
+  M.capabilities.textDocument.completion.completionItem.preselectSupport = true
+  M.capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
+  M.capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
+  M.capabilities.textDocument.completion.completionItem.deprecatedSupport = true
+  M.capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
+  M.capabilities.textDocument.completion.completionItem.tagSupport = { valueSet = { 1 } }
+  M.capabilities.textDocument.completion.completionItem.resolveSupport =
+  { properties = { "documentation", "detail", "additionalTextEdits" } }
+  M.capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
+  M.flags = {}
   local opts = utils.extend_tbl(server, { capabilities = M.capabilities, flags = M.flags })
-  if server_name == "jsonls" then -- by default add json schemas
+
+  -- Define user server rules.
+  if server_name == "jsonls" then -- Add schemastore schemas
     local schemastore_avail, schemastore = pcall(require, "schemastore")
     if schemastore_avail then
       opts.settings = { json = { schemas = schemastore.json.schemas(), validate = { enable = true } } }
     end
   end
-  if server_name == "yamlls" then -- by default add yaml schemas
+  if server_name == "yamlls" then -- Add schemastore schemas
     local schemastore_avail, schemastore = pcall(require, "schemastore")
     if schemastore_avail then opts.settings = { yaml = { schemas = schemastore.yaml.schemas() } } end
   end
-  if server_name == "lua_ls" then -- by default initialize neodev and disable third party checking
+  if server_name == "lua_ls" then -- Disable third party checking
     pcall(require, "neodev")
     opts.settings = { Lua = { workspace = { checkThirdParty = false } } }
-  end
-  if server_name == "bashls" then -- by default use mason shellcheck path
-    opts.settings = { bashIde = { shellcheckPath = vim.fn.stdpath "data" .. "/mason/bin/shellcheck" } }
   end
 
   -- Apply them

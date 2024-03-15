@@ -191,7 +191,7 @@ return {
             " ",
             " ",
             "Loaded " .. stats.count .. " plugins  in " .. ms .. "ms",
-            "..............................",
+            "...............................",
           }
           opts.section.footer.opts.hl = "DashboardFooter"
           vim.cmd "highlight DashboardFooter guifg=#D29B68"
@@ -297,7 +297,7 @@ return {
       local lib = require "heirline-components.all"
       return {
         opts = {
-          disable_winbar_cb = function(args) -- make the breadcrumbs bar inactive when...
+          disable_winbar_cb = function(args) -- We do this to avoid showing it on the greeter.
             local is_disabled = not require("heirline-components.buffer").is_valid(args.buf) or
             lib.condition.buffer_matches({
               buftype = { "terminal", "prompt", "nofile", "help", "quickfix" },
@@ -315,8 +315,28 @@ return {
         winbar = { -- UI breadcrumbs bar
           init = function(self) self.bufnr = vim.api.nvim_get_current_buf() end,
           fallthrough = false,
-          lib.component.breadcrumbs_when_inactive(),
-          lib.component.breadcrumbs()
+          -- Winbar for terminal, neotree, and aerial.
+          {
+            condition = function() return not lib.condition.is_active() end,
+            {
+              lib.component.neotree(),
+              lib.component.compiler_play(),
+              lib.component.fill(),
+              lib.component.compiler_build_type(),
+              lib.component.compiler_redo(),
+              lib.component.aerial(),
+            },
+          },
+          -- Regular winbar
+          {
+            lib.component.neotree(),
+            lib.component.compiler_play(),
+            lib.component.fill(),
+            lib.component.breadcrumbs(),
+            lib.component.fill(),
+            lib.component.compiler_redo(),
+            lib.component.aerial(),
+          }
         },
         statuscolumn = { -- UI left column
           init = function(self) self.bufnr = vim.api.nvim_get_current_buf() end,
@@ -542,7 +562,10 @@ return {
     enabled = vim.g.icons_enabled,
     opts = {
       override = {
-        default_icon = { icon = require("base.utils").get_icon "DefaultFile" },
+        default_icon = {
+          icon = require("base.utils").get_icon("DefaultFile"),
+          name = "default"
+        },
         deb = { icon = "", name = "Deb" },
         lock = { icon = "󰌾", name = "Lock" },
         mp3 = { icon = "󰎆", name = "Mp3" },
@@ -557,6 +580,10 @@ return {
         zip = { icon = "", name = "Zip" },
       },
     },
+    config = function(_, opts)
+      require("nvim-web-devicons").setup(opts)
+      pcall(vim.api.nvim_del_user_command, "NvimWebDeviconsHiTest")
+    end
   },
 
   --  LSP icons [icons]
