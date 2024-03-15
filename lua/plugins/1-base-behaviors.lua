@@ -2,7 +2,7 @@
 -- Things that add new behaviors.
 
 --    Sections:
---       -> ranger file browser    [ranger]
+--       -> oil file browser       [ranger]
 --       -> project.nvim           [project search + auto cd]
 --       -> trim.nvim              [auto trim spaces]
 --       -> stickybuf.nvim         [lock special buffers]
@@ -23,39 +23,38 @@
 --       -> lsp_signature.nvim     [auto params help]
 --       -> distroupdate.nvim      [distro update]
 
-local is_windows = vim.fn.has('win32') == 1             -- true if on windows
-local is_android = vim.fn.isdirectory('/system') == 1   -- true if on android
+local is_windows = vim.fn.has('win32') == 1           -- true if on windows
+local is_android = vim.fn.isdirectory('/system') == 1 -- true if on android
 
 return {
-  -- [ranger] file browser
-  -- https://github.com/kevinhwang91/rnvimr
-  -- This is NormalNvim file browser, which is only for Linux.
-  --
-  -- If you are on Windows, you have 3 options:
-  -- * Use neotree instead (<space>+e).
-  -- * Delete rnvimr and install some other file browser you like.
-  -- * Or enable WLS on Windows and launch neovim from there.
-  --   This way you can install and use 'ranger' and its dependency 'pynvim'.
+  -- [oil] file browser
   {
-    "kevinhwang91/rnvimr",
+    "stevearc/oil.nvim",
     event = "VeryLazy",
-    cmd = { "RnvimrToggle" },
-    enabled = not is_windows,
-    config = function(_, opts)
-      -- vim.g.rnvimr_vanilla = 1            -- Often solves issues in your ranger config.
-      vim.g.rnvimr_enable_picker = 1         -- Close rnvimr after choosing a file.
-      vim.g.rnvimr_ranger_cmd = { "ranger" } -- By passing a script like TERM=foot ranger "$@" you can open terminals inside ranger.
-      if is_android then -- Open on full screenn
-        vim.g.rnvimr_layout = {
-          relative = "editor",
-          width = 200,
-          height = 100,
-          col = 0,
-          row = 0,
-          style = "minimal",
-        }
-      end
-      require("project_nvim").setup(opts)
+    opts = {},
+    -- Optional dependencies
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("oil").setup({
+        keymaps = {
+          ["<Esc>"] = "actions.close",
+          ["q"] = "actions.close"
+        },
+        buf_options = {
+          buflisted = false,
+          bufhidden = "delete",
+        },
+        float = {
+          -- Padding around the floating window
+          padding = 2,
+          max_width = 60,
+          max_height = 16,
+          border = "rounded",
+          win_options = {
+            winblend = 0,
+          },
+        },
+      })
     end,
   },
 
@@ -86,10 +85,10 @@ return {
       manual_mode = false,
 
       -- Don't auto-chdir for specific filetypes.
-      exclude_filetype_chdir = {"", "OverseerList", "alpha"},
+      exclude_filetype_chdir = { "", "OverseerList", "alpha" },
 
       -- Don't auto-chdir for specific buftypes.
-      exclude_buftype_chdir = {"nofile", "terminal"},
+      exclude_buftype_chdir = { "nofile", "terminal" },
 
       --ignore_lsp = { "lua_ls" },
     },
@@ -402,7 +401,7 @@ return {
             if node.type == "directory" or node:has_children() then
               if not node:is_expanded() then -- if unexpanded, expand
                 state.commands.toggle_node(state)
-              else -- if expanded and has children, seleect the next child
+              else                           -- if expanded and has children, seleect the next child
                 require("neo-tree.ui.renderer").focus_node(
                   state,
                   node:get_child_ids()[1]
@@ -523,20 +522,20 @@ return {
 
         -- only use indent until a file is opened
         return (filetype == "" or buftype == "nofile") and "indent"
-          or function(bufnr)
-            return require("ufo")
-                .getFolds(bufnr, "lsp")
-                :catch(
-                  function(err)
-                    return handleFallbackException(bufnr, err, "treesitter")
-                  end
-                )
-                :catch(
-                  function(err)
-                    return handleFallbackException(bufnr, err, "indent")
-                  end
-                )
-          end
+            or function(bufnr)
+              return require("ufo")
+                  .getFolds(bufnr, "lsp")
+                  :catch(
+                    function(err)
+                      return handleFallbackException(bufnr, err, "treesitter")
+                    end
+                  )
+                  :catch(
+                    function(err)
+                      return handleFallbackException(bufnr, err, "indent")
+                    end
+                  )
+            end
       end,
     },
   },
@@ -639,13 +638,14 @@ return {
         handler_opts = round_borders, -- Window style
 
         -- Hint mode
-        hint_enable = false,          -- Display it as hint.
+        hint_enable = false, -- Display it as hint.
         hint_prefix = "👈 ",
 
         -- Additionally, you can use <space>ui to toggle inlay hints.
         toggle_key_flip_floatwin_setting = is_enabled
-      } end,
-    config = function(_, opts) require'lsp_signature'.setup(opts) end
+      }
+    end,
+    config = function(_, opts) require 'lsp_signature'.setup(opts) end
   },
 
   -- distroupdate.nvim [distro update]
@@ -666,17 +666,17 @@ return {
       local utils = require "base.utils"
       local config_dir = utils.os_path(vim.fn.stdpath "config" .. "/lua/base/")
       return {
-        channel = "stable",                                                  -- stable/nightly
+        channel = "stable", -- stable/nightly
         hot_reload_files = {
           config_dir .. "1-options.lua",
           config_dir .. "4-mappings.lua"
         },
         hot_reload_callback = function()
-          vim.cmd(":silent! colorscheme " .. base.default_colorscheme)       -- nvim     colorscheme reload command
-          vim.cmd(":silent! doautocmd ColorScheme")                          -- heirline colorscheme reload event
+          vim.cmd(":silent! colorscheme " .. base.default_colorscheme) -- nvim     colorscheme reload command
+          vim.cmd(":silent! doautocmd ColorScheme")                    -- heirline colorscheme reload event
         end
       }
     end
   },
 
-}  -- end of return
+} -- end of return
