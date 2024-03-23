@@ -91,6 +91,7 @@ maps.n["gx"] = { utils.system_open, desc = "Open the file under cursor with syst
 maps.n["vs"] = { "<cmd>vsplit<cr>", desc = "Vertical Split" }
 maps.n["sp"] = { "<cmd>split<cr>", desc = "Horizontal Split" }
 maps.n["0"] = { "^", desc = "Go to the fist character of the line (aliases 0 to ^)" }
+maps.n["gx"] = { utils.open_with_program, desc = "Open the file under cursor with a program" }
 maps.n["<Tab>"] = {
   "<Tab>",
   noremap = true,
@@ -216,7 +217,6 @@ maps.n["<leader>ud"] = { ui.toggle_diagnostics, desc = "Diagnostics" }
 maps.n["<leader>uD"] = { ui.set_indent, desc = "Change indent setting" }
 maps.n["<leader>ug"] = { ui.toggle_signcolumn, desc = "Signcolumn" }
 maps.n["<leader>ul"] = { ui.toggle_statusline, desc = "Statusline" }
-maps.n["<leader>uL"] = { ui.toggle_codelens, desc = "CodeLens" }
 maps.n["<leader>un"] = { ui.change_number, desc = "Change line numbering" }
 maps.n["<leader>uP"] = { ui.toggle_paste, desc = "Paste mode" }
 maps.n["<leader>us"] = { ui.toggle_spell, desc = "Spellcheck" }
@@ -408,9 +408,9 @@ if vim.fn.executable "lazygit" == 1 then -- if lazygit exists, show it
     function()
       local git_dir = vim.fn.finddir(".git", vim.fn.getcwd() .. ";")
       if git_dir ~= "" then
-        utils.toggle_term_cmd "lazygit"
+        vim.cmd "TermExec cmd='lazygit && exit'"
       else
-        utils.notify("Not a git repository", 4)
+        utils.notify("Not a git repository", vim.log.levels.WARN)
       end
     end,
     desc = "ToggleTerm lazygit",
@@ -427,7 +427,7 @@ if vim.fn.executable "gitui" == 1 then -- if gitui exists, show it
           vim.cmd "TermExec cmd='gitui && exit'"
         end
       else
-        utils.notify("Not a git repository", 4)
+        utils.notify("Not a git repository", vim.log.levels.WARN)
       end
     end,
     desc = "ToggleTerm gitui",
@@ -538,9 +538,8 @@ end
 
 -- aerial.nvimm ------------------------------------------------------------
 if is_available "aerial.nvim" then
-  maps.n["<leader>l"] = icons.l
-  maps.n["<leader>lt"] =
-  { function() require("aerial").toggle() end, desc = "Symbols tree" }
+  maps.n["<leader>i"] =
+  { function() require("aerial").toggle() end, desc = "Aerial" }
 end
 
 -- telescope.nvim [find] ----------------------------------------------------
@@ -922,7 +921,7 @@ if is_available "nvim-coverage" then
     function()
       utils.notify(
         "Attempting to find coverage/lcov.info in project root...",
-        3
+        vim.log.levels.INFO
       )
       require("coverage").load(false)
       require("coverage").summary()
@@ -1071,12 +1070,12 @@ function M.lsp_mappings(client, bufnr)
   end
 
   if client.supports_method "textDocument/codeLens" then
-    utils.add_autocmds("lsp_codelens_refresh", bufnr, {
+    utils.add_autocmds_to_buffer("lsp_codelens_refresh", bufnr, {
       events = { "InsertLeave", "BufEnter" },
       desc = "Refresh codelens",
       callback = function(args)
         if not has_capability("textDocument/codeLens", { bufnr = bufnr }) then
-          utils.del_autocmds("lsp_codelens_refresh", bufnr)
+          utils.del_autocmds_from_buffer("lsp_codelens_refresh", bufnr)
           return
         end
         if vim.g.codelens_enabled then vim.lsp.codelens.refresh({ bufnr = args.buf }) end
@@ -1087,6 +1086,7 @@ function M.lsp_mappings(client, bufnr)
       function() vim.lsp.codelens.run() end,
       desc = "LSP CodeLens run",
     }
+    maps.n["<leader>uL"] = { ui.toggle_codelens, desc = "CodeLens" }
   end
 
   lsp_mappings.n["<leader>lL"] = {
@@ -1131,18 +1131,18 @@ function M.lsp_mappings(client, bufnr)
       and (vim.tbl_isempty(autoformat.allow_filetypes or {}) or vim.tbl_contains(autoformat.allow_filetypes, filetype))
       and (vim.tbl_isempty(autoformat.ignore_filetypes or {}) or not vim.tbl_contains(autoformat.ignore_filetypes, filetype))
     then
-      utils.add_autocmds("lsp_auto_format", bufnr, {
+      utils.add_autocmds_to_buffer("lsp_auto_format", bufnr, {
         events = "BufWritePre",
         desc = "Autoformat on save",
         callback = function()
           if not has_capability("textDocument/formatting", { bufnr = bufnr }) then
-            utils.del_autocmds("lsp_auto_format", bufnr)
+            utils.del_autocmds_from_buffer("lsp_auto_format", bufnr)
             return
           end
           local autoformat_enabled = vim.b.autoformat_enabled
           if autoformat_enabled == nil then autoformat_enabled = vim.g.autoformat_enabled end
           if autoformat_enabled and ((not autoformat.filter) or autoformat.filter(bufnr)) then
-            vim.lsp.buf.format(utils.extend_tbl(M.format_opts, { bufnr = bufnr }))
+            vim.lsp.buf.format(vim.tbl_deep_extend("force", M.format_opts, { bufnr = bufnr }))
           end
         end,
       })
@@ -1158,13 +1158,13 @@ function M.lsp_mappings(client, bufnr)
   end
 
   if client.supports_method "textDocument/documentHighlight" then
-    utils.add_autocmds("lsp_document_highlight", bufnr, {
+    utils.add_autocmds_to_buffer("lsp_document_highlight", bufnr, {
       {
         events = { "CursorHold", "CursorHoldI" },
         desc = "highlight references when cursor holds",
         callback = function()
           if not has_capability("textDocument/documentHighlight", { bufnr = bufnr }) then
-            utils.del_autocmds("lsp_document_highlight", bufnr)
+            utils.del_autocmds_from_buffer("lsp_document_highlight", bufnr)
             return
           end
           vim.lsp.buf.document_highlight()

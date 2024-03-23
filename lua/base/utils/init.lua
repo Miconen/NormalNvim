@@ -4,26 +4,21 @@
 --  General utility functions to use within Nvim.
 
 --    Functions:
---      -> cmd                   → Run a shell command and return true/false
---      -> conditional_func      → Run a function if conditions are met.
---      -> confirm_quit          → Ask for confirmation before exit.
---      -> add_autocmds          → Add the specified autocmds to a bufnr.
---      -> del_autocmds          → Delete the specified autocmds from a bufnr.
---      -> get_mappings_template → Return a mappings table.
---      -> extend_tbl            → Add the content of a table to another table.
---      -> get_icon              → Return an icon from the icons directory.
---      -> is_available          → Return true if the plugin is available.
---      -> is_big_file           → Return true if the file is too big.
---      -> load_plugin_with_func → Load a plugin before running a command.
---      -> notify                → Send a notification asynchronously.
---      -> os_path               → Convert the current path to the current OS.
---      -> plugin_opts           → Return a plugin opts table.
---      -> set_mappings          → We use it to create mappings in a clean way.
---      -> set_url_effect        → Show an effect for urls.
---      -> system_open           → Open the file or URL under the cursor.
---      -> toggle_term_cmd       → get/set a re-usable toggleterm session.
---      -> trigger_event         → Manually execute a user event.
---      -> which_key_register    → When setting a mapping, add it to whichkey.
+--      -> run_cmd                  → Run a shell command and return true/false.
+--      -> add_autocmds_to_buffer   → Add autocmds to a bufnr.
+--      -> del_autocmds_from_buffer → Delete autocmds from a bufnr.
+--      -> get_icon                 → Return an icon from the icons directory.
+--      -> get_mappings_template    → Return a empty mappings table.
+--      -> is_available             → Return true if the plugin exist.
+--      -> is_big_file              → Return true if the file is too big.
+--      -> notify                   → Send a notification with a default title.
+--      -> os_path                  → Converts a path to the current OS.
+--      -> get_plugin_opts          → Return a plugin opts table.
+--      -> set_mappings             → Set a list of mappings in a clean way.
+--      -> set_url_effect           → Show an effect for urls.
+--      -> open_with_program        → Open the file or URL under the cursor.
+--      -> trigger_event            → Manually trigger a event.
+--      -> which_key_register       → When setting a mapping, add it to whichkey.
 
 
 local M = {}
@@ -34,7 +29,7 @@ local M = {}
 ---@param show_error? boolean Whether or not to show an unsuccessful command
 ---                           as an error to the user
 ---@return string|nil # The result of a successfully executed command or nil
-function M.cmd(cmd, show_error)
+function M.run_cmd(cmd, show_error)
   if type(cmd) == "string" then cmd = vim.split(cmd, " ") end
   if vim.fn.has "win32" == 1 then cmd = vim.list_extend({ "cmd.exe", "/C" }, cmd) end
   local result = vim.fn.system(cmd)
@@ -45,35 +40,12 @@ function M.cmd(cmd, show_error)
   return success and result:gsub("[\27\155][][()#;?%d]*[A-PRZcf-ntqry=><~]", "") or nil
 end
 
---- Given a function passed as 1º parameter,
----
---- Call said function if:
----   * It is indeed a function.
----   * The condition passed on the second parameter is true.
----  Considering:
----   * Extra parameters will be passed to the function of the first parameter.
----@param func function The function to run.
----@param condition boolean # Whether to run the function or not.
----@return any|nil result # the result of the function running or nil.
-function M.conditional_func(func, condition, ...)
-  if condition and type(func) == "function" then return func(...) end
-end
-
---- Always ask before exiting nvim, even if there is nothing to be saved.
-function M.confirm_quit()
-  local choice = vim.fn.confirm("Do you really want to exit nvim?", "&Yes\n&No", 2)
-  if choice == 1 then
-    -- If user confirms, but there are still files to be saved: Ask
-    vim.cmd('confirm quit')
-  end
-end
-
 --- Adds autocmds to a specific buffer if they don't already exist.
 ---
 --- @param augroup string       The name of the autocmd group to which the autocmds belong.
 --- @param bufnr number         The buffer number to which the autocmds should be applied.
 --- @param autocmds table|any  A table or a single autocmd definition containing the autocmds to add.
-function M.add_autocmds(augroup, bufnr, autocmds)
+function M.add_autocmds_to_buffer(augroup, bufnr, autocmds)
   -- Check if autocmds is a list, if not convert it to a list
   if not vim.tbl_islist(autocmds) then autocmds = { autocmds } end
 
@@ -105,7 +77,7 @@ end
 ---
 --- @param augroup string  The name of the autocmd group from which the autocmds should be removed.
 --- @param bufnr number    The buffer number from which the autocmds should be removed.
-function M.del_autocmds(augroup, bufnr)
+function M.del_autocmds_from_buffer(augroup, bufnr)
   -- Attempt to retrieve existing autocmds associated with the specified augroup and bufnr
   local cmds_found, cmds = pcall(vim.api.nvim_get_autocmds, { group = augroup, buffer = bufnr })
 
@@ -114,30 +86,6 @@ function M.del_autocmds(augroup, bufnr)
     -- Map over each retrieved autocmd and delete it
     vim.tbl_map(function(cmd) vim.api.nvim_del_autocmd(cmd.id) end, cmds)
   end
-end
-
---- Get an empty table of mappings with a key for each map mode
----@return table<string,table> # a table with entries for each map mode
-function M.get_mappings_template()
-  local maps = {}
-  for _, mode in ipairs { "", "n", "v", "x", "s", "o", "!", "i", "l", "c", "t" } do
-    maps[mode] = {}
-  end
-  if vim.fn.has "nvim-0.10.0" == 1 then
-    for _, abbr_mode in ipairs { "ia", "ca", "!a" } do
-      maps[abbr_mode] = {}
-    end
-  end
-  return maps
-end
-
---- Merge extended options with a default table of options
----@param default? table The default table that you want to merge into
----@param opts? table The new options that should be merged with the default table
----@return table # The merged table
-function M.extend_tbl(default, opts)
-  opts = opts or {}
-  return default and vim.tbl_deep_extend("force", default, opts) or opts
 end
 
 --- Get an icon from `lspkind` if it is available and return it.
@@ -152,6 +100,22 @@ function M.get_icon(kind, padding, no_fallback)
   end
   local icon = M[icon_pack] and M[icon_pack][kind]
   return icon and icon .. string.rep(" ", padding or 0) or ""
+end
+
+
+--- Get an empty table of mappings with a key for each map mode.
+---@return table<string,table> # a table with entries for each map mode.
+function M.get_mappings_template()
+  local maps = {}
+  for _, mode in ipairs { "", "n", "v", "x", "s", "o", "!", "i", "l", "c", "t" } do
+    maps[mode] = {}
+  end
+  if vim.fn.has "nvim-0.10.0" == 1 then
+    for _, abbr_mode in ipairs { "ia", "ca", "!a" } do
+      maps[abbr_mode] = {}
+    end
+  end
+  return maps
 end
 
 --- Check if a plugin is defined in lazy. Useful with lazy loading
@@ -176,49 +140,31 @@ function M.is_big_file(bufnr)
   return is_big_file
 end
 
---- Helper function to require a module when running a function.
---- This function is just a way for us to save boilerplate on a couple cases.
----@param plugin string The plugin to call `require("lazy").load` with.
----@param module table The system module where the functions live (e.g. `vim.ui`).
----@param func_names string|string[] The functions to wrap in
----                                  the given module (e.g. `{ "ui", "select }`).
-function M.load_plugin_with_func(plugin, module, func_names)
-  if type(func_names) == "string" then func_names = { func_names } end
-  for _, func in ipairs(func_names) do
-    local old_func = module[func]
-    module[func] = function(...)
-      module[func] = old_func
-      require("lazy").load { plugins = { plugin } }
-      module[func](...)
-    end
-  end
-end
-
---- Serve a notification with a title of Neovim.
+--- Sends a notification with 'Neovim' as default title.
 --- Same as using vim.notify, but it saves us typing the title every time.
 ---@param msg string The notification body.
 ---@param type number|nil The type of the notification (:help vim.log.levels).
 ---@param opts? table The nvim-notify options to use (:help notify-options).
 function M.notify(msg, type, opts)
   vim.schedule(function() vim.notify(
-    msg, type, M.extend_tbl({ title = "Neovim" }, opts)) end)
+    msg, type, vim.tbl_deep_extend("force", { title = "Neovim" }, opts or {})) end)
 end
 
----Given a string, convert 'slash' to 'inverted slash' if on windows, and vice versa on UNIX.
----Then return the resulting string.
+--- Convert a path to the path format of the current operative system.
+--- It converts 'slash' to 'inverted slash' if on windows, and vice versa on UNIX.
 ---@param path string A path string.
 ---@return string|nil,nil path A path string formatted for the current OS.
 function M.os_path(path)
   if path == nil then return nil end
   -- Get the platform-specific path separator
-  local separator = package.config:sub(1,1)
+  local separator = string.sub(package.config, 1, 1)
   return string.gsub(path, '[/\\]', separator)
 end
 
---- Resolve the options table for a given plugin with lazy
----@param plugin string The plugin to search for
----@return table opts # The plugin options
-function M.plugin_opts(plugin)
+--- Get the options of a plugin managed by lazy.
+---@param plugin string The plugin to get options from
+---@return table opts # The plugin options, or empty table if no plugin.
+function M.get_plugin_opts(plugin)
   local lazy_config_avail, lazy_config = pcall(require, "lazy.core.config")
   local lazy_plugin_avail, lazy_plugin = pcall(require, "lazy.core.plugin")
   local opts = {}
@@ -229,9 +175,9 @@ function M.plugin_opts(plugin)
   return opts
 end
 
---- Table based API for setting keybindings.
+--- Set a table of mappings.
 ---
---- This wrapper saver boilerplate code, and takes care of `whichkey.nvim`
+--- This wrapper prevents a  boilerplate code, and takes care of `whichkey.nvim`.
 ---@param map_table table A nested table where the first key is the vim mode,
 ---                       the second key is the key to map, and the value is
 ---                       the function to set the mapping to.
@@ -290,9 +236,9 @@ function M.delete_url_effect()
   end
 end
 
---- Open a URL under the cursor with the current operating system.
+--- Open the file or url under the cursor.
 ---@param path string The path of the file to open with the system opener.
-function M.system_open(path)
+function M.open_with_program(path)
   if vim.ui.open then return vim.ui.open(path) end
   local cmd
   if vim.fn.has "mac" == 1 then
@@ -319,46 +265,30 @@ function M.system_open(path)
   vim.fn.jobstart(vim.list_extend(cmd, { path }), { detach = true })
 end
 
---- Toggle a user terminal if it exists, if not then create a new one and save it.
----@param opts string|table A terminal command string or a table of options
----                         for Terminal:new() Check toggleterm.nvim
----                         documentation for table format.
-function M.toggle_term_cmd(opts)
-  local terms = {}
-  -- if a command string is provided, create a table for Terminal:new() options
-  if type(opts) == "string" then opts = { cmd = opts, hidden = true } end
-  local num = vim.v.count > 0 and vim.v.count or 1
-  -- if terminal doesn't exist yet, create it
-  if not terms[opts.cmd] then terms[opts.cmd] = {} end
-  if not terms[opts.cmd][num] then
-    if not opts.count then opts.count = vim.tbl_count(terms) * 100 + num end
-    if not opts.on_exit then
-      opts.on_exit = function() terms[opts.cmd][num] = nil end
-    end
-    terms[opts.cmd][num] = require("toggleterm.terminal").Terminal:new(opts)
-  end
-  -- toggle the terminal
-  terms[opts.cmd][num]:toggle()
-end
-
 --- Convenient wapper to save code when we Trigger events.
 --- To listen for a event triggered by this function you can use `autocmd`.
 ---@param event string Name of the event.
+---@param is_urgent boolean|nil If true, trigger directly instead of scheduling. Useful for startup events.
 -- @usage To run a User event:   `trigger_event("User MyUserEvent")`
--- @usage To run a Neovim event: `trigger_event("BufEnter")`
-function M.trigger_event(event)
-  -- detect if event start with the substring "User "
-  local is_user_event = string.match(event, "^User ") ~= nil
-
-  vim.schedule(function()
+-- @usage To run a Neovim event: `trigger_event("BufEnter")
+function M.trigger_event(event, is_urgent)
+  -- define behavior
+  local function trigger()
+    local is_user_event = string.match(event, "^User ") ~= nil
     if is_user_event then
-      -- Substract the substring "User " from the beginning of the event.
       event = event:gsub("^User ", "")
       vim.api.nvim_exec_autocmds("User", { pattern = event, modeline = false })
     else
       vim.api.nvim_exec_autocmds(event, { modeline = false })
     end
-  end)
+  end
+
+  -- execute
+  if is_urgent then
+    trigger()
+  else
+    vim.schedule(trigger)
+  end
 end
 
 --- Register queued which-key mappings.

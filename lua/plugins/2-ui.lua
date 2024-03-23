@@ -186,13 +186,14 @@ return {
         once = true,
         callback = function()
           local stats = require("lazy").stats()
+          stats.real_cputime = not is_windows
           local ms = math.floor(stats.startuptime * 100 + 0.5) / 100
           opts.section.footer.val = {
             " ",
             " ",
             " ",
-            "Loaded " .. stats.count .. " plugins  in " .. ms .. "ms",
-            "...............................",
+            "Loaded " .. stats.loaded .. " plugins  in " .. ms .. "ms",
+            ".............................",
           }
           opts.section.footer.opts.hl = "DashboardFooter"
           vim.cmd "highlight DashboardFooter guifg=#D29B68"
@@ -206,28 +207,34 @@ return {
   --  https://github.com/rcarriga/nvim-notify
   {
     "rcarriga/nvim-notify",
-    init = function()
-      require("base.utils").load_plugin_with_func("nvim-notify", vim, "notify")
+    event = "User BaseDefered",
+    opts = function()
+      local fps
+      if not is_android then fps = 144 else fps = 30 end
+
+      return {
+        timeout = 2500,
+        fps = fps,
+        max_height = function() return math.floor(vim.o.lines * 0.75) end,
+        max_width = function() return math.floor(vim.o.columns * 0.75) end,
+        on_open = function(win)
+          -- enable markdown support on notifications
+          vim.api.nvim_win_set_config(win, { zindex = 175 })
+          if not vim.g.notifications_enabled then
+            vim.api.nvim_win_close(win, true)
+          end
+          if not package.loaded["nvim-treesitter"] then
+            pcall(require, "nvim-treesitter")
+          end
+          vim.wo[win].conceallevel = 3
+          local buf = vim.api.nvim_win_get_buf(win)
+          if not pcall(vim.treesitter.start, buf, "markdown") then
+            vim.bo[buf].syntax = "markdown"
+          end
+          vim.wo[win].spell = false
+        end,
+      }
     end,
-    opts = {
-      max_height = function() return math.floor(vim.o.lines * 0.75) end,
-      max_width = function() return math.floor(vim.o.columns * 0.75) end,
-      on_open = function(win)
-        vim.api.nvim_win_set_config(win, { zindex = 175 })
-        if not vim.g.notifications_enabled then
-          vim.api.nvim_win_close(win, true)
-        end
-        if not package.loaded["nvim-treesitter"] then
-          pcall(require, "nvim-treesitter")
-        end
-        vim.wo[win].conceallevel = 3
-        local buf = vim.api.nvim_win_get_buf(win)
-        if not pcall(vim.treesitter.start, buf, "markdown") then
-          vim.bo[buf].syntax = "markdown"
-        end
-        vim.wo[win].spell = false
-      end,
-    },
     config = function(_, opts)
       local notify = require "notify"
       notify.setup(opts)
@@ -293,7 +300,7 @@ return {
   {
     "rebelot/heirline.nvim",
     dependencies = { "zeioth/heirline-components.nvim" },
-    event = "BufEnter",
+    event = "User BaseDefered",
     opts = function()
       local lib = require "heirline-components.all"
       return {
@@ -454,46 +461,16 @@ return {
       telescope.setup(opts)
       -- Here we define the Telescope extension for all plugins.
       -- If you delete a plugin, you can also delete its Telescope extension.
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "nvim-notify",
-        "notify"
-      )
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "telescope-fzf-native.nvim",
-        "fzf"
-      )
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "telescope-undo.nvim",
-        "undo"
-      )
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "nvim-neoclip.lua",
-        "neoclip"
-      )
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "nvim-neoclip.lua",
-        "macroscope"
-      )
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "project.nvim",
-        "projects"
-      )
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "LuaSnip",
-        "luasnip"
-      )
-      utils.conditional_func(
-        telescope.load_extension,
-        utils.is_available "aerial.nvim",
-        "aerial"
-      )
+      if utils.is_available("nvim-notify") then telescope.load_extension("notify") end
+      if utils.is_available("telescope-fzf-native.nvim") then telescope.load_extension("fzf") end
+      if utils.is_available("telescope-undo.nvim") then telescope.load_extension("undo") end
+      if utils.is_available("project.nvim") then telescope.load_extension("projects") end
+      if utils.is_available("LuaSnip") then telescope.load_extension("luasnip") end
+      if utils.is_available("aerial.nvim") then telescope.load_extension("aerial") end
+      if utils.is_available("nvim-neoclip.lua") then
+        telescope.load_extension("neoclip")
+        telescope.load_extension("macroscope")
+      end
     end,
   },
 
@@ -501,17 +478,11 @@ return {
   --  https://github.com/stevearc/dressing.nvim
   {
     "stevearc/dressing.nvim",
-    init = function()
-      require("base.utils").load_plugin_with_func(
-        "dressing.nvim",
-        vim.ui,
-        { "input", "select" }
-      )
-    end,
+    event = "User BaseDefered",
     opts = {
       input = { default_prompt = "➤ "},
       select = { backend = { "telescope", "builtin" } },
-    },
+    }
   },
 
   --  Noice.nvim [better cmd/search line]
@@ -525,7 +496,7 @@ return {
   --  * Search results: We use a heirline component for this.
   {
     "folke/noice.nvim",
-    event = "VeryLazy",
+    event = "User BaseDefered",
     opts = function()
       local enable_conceal = false          -- Hide command text if true
       return {
@@ -561,6 +532,7 @@ return {
   {
     "nvim-tree/nvim-web-devicons",
     enabled = vim.g.icons_enabled,
+    event = "User BaseDefered",
     opts = {
       override = {
         default_icon = {
@@ -692,7 +664,7 @@ return {
   --  But we also have a autocmd to flash on yank.
   {
     "tzachar/highlight-undo.nvim",
-    event = "VeryLazy",
+    event = "User BaseDefered",
     opts = {
       hlgroup = "CurSearch",
       duration = 150,
@@ -717,7 +689,7 @@ return {
   --  https://github.com/folke/which-key.nvim
   {
     "folke/which-key.nvim",
-    event = "VeryLazy",
+    event = "User BaseDefered",
     opts = {
       icons = { group = vim.g.icons_enabled and "" or "+", separator = "" },
       disable = { filetypes = { "TelescopePrompt" } },

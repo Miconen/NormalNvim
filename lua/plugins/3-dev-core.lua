@@ -40,7 +40,7 @@ return {
     dependencies = {
       "windwp/nvim-ts-autotag",
       "nvim-treesitter/nvim-treesitter-textobjects",
-      "JoosepAlviste/nvim-ts-context-commentstring",
+      "JoosepAlviste/nvim-ts-context-commentstring"
     },
     event = "User BaseFile",
     cmd = {
@@ -157,27 +157,24 @@ return {
 
   -- nvim-java [java support]
   -- https://github.com/nvim-java/nvim-java
-  -- Reliable jdtls support. Must go before mason-lspconfig nad lsp-config.
+  -- Reliable jdtls support. Must go before mason-lspconfig and lsp-config.
   {
-    'nvim-java/nvim-java',
+    "nvim-java/nvim-java",
     ft = { "java" },
     dependencies = {
-      'nvim-java/lua-async-await',
-      'nvim-java/nvim-java-core',
-      'nvim-java/nvim-java-test',
-      'nvim-java/nvim-java-dap',
-      'MunifTanjim/nui.nvim',
-      'neovim/nvim-lspconfig',
-      'mfussenegger/nvim-dap',
-      {
-        'williamboman/mason.nvim',
-        opts = {
-          registries = {
-            'github:nvim-java/mason-registry',
-            'github:mason-org/mason-registry',
-          },
-        },
-      }
+      "nvim-java/lua-async-await",
+      "nvim-java/nvim-java-core",
+      "nvim-java/nvim-java-test",
+      "nvim-java/nvim-java-dap",
+      "MunifTanjim/nui.nvim",
+      "neovim/nvim-lspconfig",
+      "mfussenegger/nvim-dap",
+      "williamboman/mason.nvim",
+    },
+    opts = {
+	    notifications = {
+	      dap = false,
+	    },
     },
   },
 
@@ -187,6 +184,13 @@ return {
   {
     "neovim/nvim-lspconfig",
     event = "User BaseFile",
+    dependencies = "nvim-java/nvim-java",
+    config = function()
+      -- nvim-java DAP support.
+      if utils.is_available("nvim-java") then
+        require("lspconfig").jdtls.setup({})
+      end
+    end
   },
 
   -- mason-lspconfig [auto start lsp]
@@ -224,6 +228,10 @@ return {
       "MasonUpdateAll", -- this cmd is provided by mason-extra-cmds
     },
     opts = {
+      registries = {
+        "github:nvim-java/mason-registry",
+        "github:mason-org/mason-registry",
+      },
       ui = {
         icons = {
           package_installed = "✓",
@@ -329,21 +337,20 @@ return {
 
       return {
         enabled = function() -- disable in certain cases on dap.
-          local is_buftype_prompt = vim.bo.buftype == "prompt"
-          local is_disabled_filetype = utils.is_available("cmp-dap")
-              and vim.tbl_contains({ "dap-repl", "dapui_watches", "dapui_hover" },
-                vim.bo.filetype)
-
-          if not is_disabled_filetype or is_buftype_prompt then
-            return vim.g.cmp_enabled
-          else
+          local is_prompt = vim.bo.buftype == "prompt"
+          local is_dap_prompt = utils.is_available("cmp-dap")
+            and vim.tbl_contains(
+              { "dap-repl", "dapui_watches", "dapui_hover" }, vim.bo.filetype)
+          if is_prompt and not is_dap_prompt then
             return false
+          else
+            return vim.g.cmp_enabled
           end
         end,
         preselect = cmp.PreselectMode.None,
         formatting = {
           fields = { "kind", "abbr", "menu" },
-          format = lspkind.cmp_format(utils.plugin_opts("lspkind.nvim")),
+          format = lspkind.cmp_format(utils.get_plugin_opts("lspkind.nvim")),
         },
         snippet = {
           expand = function(args) luasnip.lsp_expand(args.body) end,
