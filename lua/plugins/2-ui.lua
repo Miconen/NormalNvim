@@ -148,12 +148,13 @@ return {
       dashboard.section.header.opts.hl = "DashboardHeader"
       vim.cmd "highlight DashboardHeader guifg=#F7778F"
 
-      local oil_button = dashboard.button("o", "🐍 Oil  ", "<cmd>OilToggle<CR>")
+      local oil_button = dashboard.button("o", "🐍 Oil  ", "<cmd>Oil --float<CR>")
 
       -- Buttons
       dashboard.section.buttons.val = {
         dashboard.button("n", "📄 New     ", "<cmd>ene<CR>"),
         dashboard.button("e", "🌺 Recent  ", "<cmd>Telescope oldfiles<CR>"),
+        dashboard.button("l", "🕹️ Leetcode     ", "<cmd>Leet<CR>"),
         oil_button,
         dashboard.button(
           "s",

@@ -99,58 +99,6 @@ maps.n["<Tab>"] = {
   desc = "FIX: Prevent TAB from behaving like <C-i>, as they share the same internal code",
 }
 
--- clipboard ---------------------------------------------------------------
-
--- Make 'c' key not copy to clipboard when changing a character.
-maps.n["c"] = { '"_c', desc = "Change without yanking" }
-maps.n["C"] = { '"_C', desc = "Change without yanking" }
-maps.x["c"] = { '"_c', desc = "Change without yanking" }
-maps.x["C"] = { '"_C', desc = "Change without yanking" }
-
--- Make 'x' key not copy to clipboard when deleting a character.
-maps.n["x"] = {
-  -- Also let's allow 'x' key to delete blank lines in normal mode.
-  function()
-    if vim.fn.col "." == 1 then
-      local line = vim.fn.getline "."
-      if line:match "^%s*$" then
-        vim.api.nvim_feedkeys('"_dd', "n", false)
-        vim.api.nvim_feedkeys("$", "n", false)
-      else
-        vim.api.nvim_feedkeys('"_x', "n", false)
-      end
-    else
-      vim.api.nvim_feedkeys('"_x', "n", false)
-    end
-  end,
-  desc = "Delete character without yanking it",
-}
-maps.x["x"] = { '"_x', desc = "Delete all characters in line" }
-
--- Same for shifted X
-maps.n["X"] = {
-  -- Also let's allow 'x' key to delete blank lines in normal mode.
-  function()
-    if vim.fn.col "." == 1 then
-      local line = vim.fn.getline "."
-      if line:match "^%s*$" then
-        vim.api.nvim_feedkeys('"_dd', "n", false)
-        vim.api.nvim_feedkeys("$", "n", false)
-      else
-        vim.api.nvim_feedkeys('"_X', "n", false)
-      end
-    else
-      vim.api.nvim_feedkeys('"_X', "n", false)
-    end
-  end,
-  desc = "Delete before character without yanking it",
-}
-maps.x["X"] = { '"_X', desc = "Delete all characters in line" }
-
--- Override nvim default behavior so it doesn't auto-yank when pasting on visual mode.
-maps.x["p"] = { "P", desc = "Paste content you've previourly yanked" }
-maps.x["P"] = { "p", desc = "Yank what you are going to override, then paste" }
-
 -- search highlighting ------------------------------------------------------
 -- use ESC to clear hlsearch, while preserving its original functionality.
 --
@@ -219,9 +167,9 @@ maps.x["G"] = {
 -- packages -----------------------------------------------------------------
 -- lazy
 maps.n["<leader>p"] = icons.p
-maps.n["<leader>pu"] =
+maps.n["<leader>pl"] =
   { function() require("lazy").check() end, desc = "Lazy open" }
-maps.n["<leader>pU"] =
+maps.n["<leader>pL"] =
   { function() require("lazy").update() end, desc = "Lazy update" }
 
 -- mason
@@ -494,7 +442,7 @@ maps.n["<leader>gt"] = {
 -- file browsers ------------------------------------
 -- oil.nvim
 if is_available "oil.nvim" then
-  maps.n["<leader>o"] = { "<cmd>Oil<cr>", desc = "Oil" }
+  maps.n["-"] = { "<cmd>Oil --float<cr>", desc = "Oil" }
 end
 
 -- session manager ---------------------------------------------------------
@@ -819,10 +767,8 @@ if is_available "toggleterm.nvim" then
     "<cmd>ToggleTerm size=80 direction=vertical<cr>",
     desc = "Toggleterm vertical split",
   }
-  maps.n["<F7>"] = { "<cmd>ToggleTerm<cr>", desc = "terminal" }
-  maps.t["<F7>"] = maps.n["<F7>"]
-  maps.n["<C-'>"] = maps.n["<F7>"] -- requires terminal that supports binding <C-'>
-  maps.t["<C-'>"] = maps.n["<F7>"] -- requires terminal that supports binding <C-'>
+  maps.n["§"] = { "<cmd>ToggleTerm<cr>", desc = "terminal" }
+  maps.t["§"] = maps.n["§"]
 end
 
 -- extra - improved terminal navigation
