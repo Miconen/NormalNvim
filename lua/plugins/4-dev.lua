@@ -294,17 +294,17 @@ return {
   --  https://github.com/github/copilot.vim
   --  As alternative to chatgpt, you can use copilot uncommenting this.
   --  Then you must run :Copilot setup
-  -- {
-  --   "github/copilot.vim",
-  --   event = "User BaseFile"
-  -- },
+  {
+    "github/copilot.vim",
+    event = "User BaseFile"
+  },
   -- copilot-cmp
   -- https://github.com/zbirenbaum/copilot-cmp
-  -- {
-  --   "zbirenbaum/copilot-cmp",
-  --   opts = { suggesion = { enabled = false }, panel = { enabled = false } },
-  --   config = function (_, opts) require("copilot_cmp").setup(opts) end
-  -- },
+  {
+    "zbirenbaum/copilot-cmp",
+    opts = { suggesion = { enabled = false }, panel = { enabled = false } },
+    config = function (_, opts) require("copilot_cmp").setup(opts) end
+  },
 
   -- [guess-indent]
   -- https://github.com/NMAC427/guess-indent.nvim
@@ -387,7 +387,8 @@ return {
   --  We currently ship most of them with nvim.
   {
     "mfussenegger/nvim-dap",
-    enabled = vim.fn.has "win32" == 0,
+    -- enabled = vim.fn.has "win32" == 0,
+    enabled = true,
     event = "User BaseFile",
     config = function()
       local dap = require("dap")
@@ -589,7 +590,7 @@ return {
       -- Javascript / Typescript (firefox)
       dap.adapters.firefox = {
         type = 'executable',
-        command = vim.fn.stdpath('data')..'/mason/bin/firefox-debug-adapter',
+        command = vim.fn.stdpath('data')..'/mason/bin/firefox-debug-adapter.cmd',
       }
       dap.configurations.typescript = {
         {
