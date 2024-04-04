@@ -22,8 +22,8 @@
 --       -> which-key                   [on-screen keybinding]
 
 local utils = require "base.utils"
-local is_windows = vim.fn.has('win32') == 1             -- true if on windows
-local is_android = vim.fn.isdirectory('/system') == 1   -- true if on android
+local is_windows = vim.fn.has('win32') == 1         -- true if on windows
+local is_android = vim.fn.isdirectory('/data') == 1 -- true if on android
 
 return {
 
@@ -59,7 +59,7 @@ return {
     cmd = "Alpha",
     -- setup header and buttonts
     opts = function()
-      local dashboard = require "alpha.themes.dashboard"
+      local dashboard = require("alpha.themes.dashboard")
 
       -- Header
       -- dashboard.section.header.val = {
@@ -119,30 +119,32 @@ return {
       --   [[ \/_/\/_/\/__/    \/_/\/_/\/_/\/_/]],
       -- }
 
-      if is_android then dashboard.section.header.val = {
-        [[         __                ]],
-        [[ __  __ /\_\    ___ ___    ]],
-        [[/\ \/\ \\/\ \ /' __` __`\  ]],
-        [[\ \ \_/ |\ \ \/\ \/\ \/\ \ ]],
-        [[ \ \___/  \ \_\ \_\ \_\ \_\]],
-        [[  \/__/    \/_/\/_/\/_/\/_/]],
-       }
-      else dashboard.section.header.val = {
-[[888b      88                                                           88]],
-[[8888b     88                                                           88]],
-[[88 `8b    88                                                           88]],
-[[88  `8b   88   ,adPPYba,   8b,dPPYba,  88,dPYba,,adPYba,   ,adPPYYba,  88]],
-[[88   `8b  88  a8"     "8a  88P'   "Y8  88P'   "88"    "8a  ""     `Y8  88]],
-[[88    `8b 88  8b       d8  88          88      88      88  ,adPPPPP88  88]],
-[[88     `8888  "8a,   ,a8"  88          88      88      88  88,    ,88  88]],
-[[88      `888   `"YbbdP"'   88          88      88      88  `"8bbdP"Y8  88]],
-                 [[                                    __                ]],
-                 [[                      ___   __  __ /\_\    ___ ___    ]],
-                 [[                    /' _ `\/\ \/\ \\/\ \ /' __` __`\  ]],
-                 [[                    /\ \/\ \ \ \_/ |\ \ \/\ \/\ \/\ \ ]],
-                 [[                    \ \_\ \_\ \___/  \ \_\ \_\ \_\ \_\]],
-                 [[                     \/_/\/_/\/__/    \/_/\/_/\/_/\/_/]],
-      }
+      if is_android then
+        dashboard.section.header.val = {
+          [[         __                ]],
+          [[ __  __ /\_\    ___ ___    ]],
+          [[/\ \/\ \\/\ \ /' __` __`\  ]],
+          [[\ \ \_/ |\ \ \/\ \/\ \/\ \ ]],
+          [[ \ \___/  \ \_\ \_\ \_\ \_\]],
+          [[  \/__/    \/_/\/_/\/_/\/_/]],
+        }
+      else
+        dashboard.section.header.val = {
+          [[888b      88                                                           88]],
+          [[8888b     88                                                           88]],
+          [[88 `8b    88                                                           88]],
+          [[88  `8b   88   ,adPPYba,   8b,dPPYba,  88,dPYba,,adPYba,   ,adPPYYba,  88]],
+          [[88   `8b  88  a8"     "8a  88P'   "Y8  88P'   "88"    "8a  ""     `Y8  88]],
+          [[88    `8b 88  8b       d8  88          88      88      88  ,adPPPPP88  88]],
+          [[88     `8888  "8a,   ,a8"  88          88      88      88  88,    ,88  88]],
+          [[88      `888   `"YbbdP"'   88          88      88      88  `"8bbdP"Y8  88]],
+          [[                                    __                ]],
+          [[                      ___   __  __ /\_\    ___ ___    ]],
+          [[                    /' _ `\/\ \/\ \\/\ \ /' __` __`\  ]],
+          [[                    /\ \/\ \ \ \_/ |\ \ \/\ \/\ \/\ \ ]],
+          [[                    \ \_\ \_\ \___/  \ \_\ \_\ \_\ \_\]],
+          [[                     \/_/\/_/\/__/    \/_/\/_/\/_/\/_/]],
+        }
       end
 
       dashboard.section.header.opts.hl = "DashboardHeader"
@@ -167,7 +169,7 @@ return {
         --  --button("LDR f '", "  Bookmarks  "),
       }
 
-      ---- Vertical margins
+      -- Vertical margins
       dashboard.config.layout[1].val =
           vim.fn.max { 2, vim.fn.floor(vim.fn.winheight(0) * 0.10) } -- Above header
       dashboard.config.layout[3].val =
@@ -236,7 +238,7 @@ return {
       }
     end,
     config = function(_, opts)
-      local notify = require "notify"
+      local notify = require("notify")
       notify.setup(opts)
       vim.notify = notify
     end,
@@ -272,7 +274,8 @@ return {
             "notify",
             "startify",
             "toggleterm",
-            "Trouble"
+            "Trouble",
+            "calltree"
           }
           if vim.tbl_contains(ignored_filetypes, vim.bo.filetype) then
             vim.b.miniindentscope_disable = true
@@ -307,10 +310,10 @@ return {
         opts = {
           disable_winbar_cb = function(args) -- We do this to avoid showing it on the greeter.
             local is_disabled = not require("heirline-components.buffer").is_valid(args.buf) or
-            lib.condition.buffer_matches({
-              buftype = { "terminal", "prompt", "nofile", "help", "quickfix" },
-              filetype = { "NvimTree", "neo%-tree", "dashboard", "Outline", "aerial" },
-            }, args.buf)
+                lib.condition.buffer_matches({
+                  buftype = { "terminal", "prompt", "nofile", "help", "quickfix" },
+                  filetype = { "NvimTree", "neo%-tree", "dashboard", "Outline", "aerial" },
+                }, args.buf)
             return is_disabled
           end,
         },
@@ -371,7 +374,7 @@ return {
       }
     end,
     config = function(_, opts)
-      local heirline = require "heirline"
+      local heirline = require("heirline")
       local heirline_components = require "heirline-components.all"
 
       -- Setup
@@ -403,7 +406,7 @@ return {
     cmd = "Telescope",
     opts = function()
       local get_icon = require("base.utils").get_icon
-      local actions = require "telescope.actions"
+      local actions = require("telescope.actions")
       local mappings = {
         i = {
           ["<C-n>"] = actions.cycle_history_next,
@@ -457,7 +460,7 @@ return {
       }
     end,
     config = function(_, opts)
-      local telescope = require "telescope"
+      local telescope = require("telescope")
       telescope.setup(opts)
       -- Here we define the Telescope extension for all plugins.
       -- If you delete a plugin, you can also delete its Telescope extension.
@@ -480,7 +483,7 @@ return {
     "stevearc/dressing.nvim",
     event = "User BaseDefered",
     opts = {
-      input = { default_prompt = "➤ "},
+      input = { default_prompt = "➤ " },
       select = { backend = { "telescope", "builtin" } },
     }
   },
@@ -503,14 +506,14 @@ return {
         presets = { bottom_search = true }, -- The kind of popup used for /
         cmdline = {
           view = "cmdline",                 -- The kind of popup used for :
-          format= {
-            cmdline =     { conceal = enable_conceal },
+          format = {
+            cmdline = { conceal = enable_conceal },
             search_down = { conceal = enable_conceal },
-            search_up =   { conceal = enable_conceal },
-            filter =      { conceal = enable_conceal },
-            lua =         { conceal = enable_conceal },
-            help =        { conceal = enable_conceal },
-            input =       { conceal = enable_conceal },
+            search_up = { conceal = enable_conceal },
+            filter = { conceal = enable_conceal },
+            lua = { conceal = enable_conceal },
+            help = { conceal = enable_conceal },
+            input = { conceal = enable_conceal },
           }
         },
 
@@ -632,7 +635,7 @@ return {
         end, { expr = true })
       end
 
-      local animate = require "mini.animate"
+      local animate = require("mini.animate")
       return {
         open = { enable = false }, -- true causes issues on nvim-spectre
         resize = {
@@ -701,4 +704,4 @@ return {
   },
 
 
-}  -- end of return
+} -- end of return

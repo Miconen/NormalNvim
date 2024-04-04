@@ -105,7 +105,6 @@ M.apply_default_lsp_settings = function()
     -- check if client is fully disabled or filtered by function
     return not (vim.tbl_contains(disabled, client.name) or (type(filter) == "function" and not filter(client)))
   end
-
 end
 
 --- This function has the sole purpose of passing the lsp keymappings to lsp.
@@ -180,7 +179,7 @@ M.setup = function(server)
   -- Get the user settings.
   local opts = M.apply_user_lsp_settings(server)
 
-  --- Get a handler from lspconfig.
+  -- Get a handler from lspconfig.
   local setup_handler = stored_handlers[server] or require("lspconfig")[server].setup(opts)
 
   -- Apply our user settings to the lspconfig handler.

@@ -21,10 +21,11 @@
 --       -> hop.nvim               [go to word visually]
 --       -> nvim-autopairs         [auto close brackets]
 --       -> lsp_signature.nvim     [auto params help]
+--       -> nvim-lightbulb         [lightbulb for code actions]
 --       -> distroupdate.nvim      [distro update]
 
-local is_windows = vim.fn.has('win32') == 1           -- true if on windows
-local is_android = vim.fn.isdirectory('/system') == 1 -- true if on android
+local is_windows = vim.fn.has('win32') == 1         -- true if on windows
+local is_android = vim.fn.isdirectory('/data') == 1 -- true if on android
 
 return {
   -- [oil] file browser
@@ -322,7 +323,7 @@ return {
     cmd = "Neotree",
     opts = function()
       vim.g.neo_tree_remove_legacy_commands = true
-      local utils = require "base.utils"
+      local utils = require("base.utils")
       local get_icon = utils.get_icon
       return {
         auto_clean_after_session_restore = true,
@@ -605,7 +606,7 @@ return {
       },
     },
     config = function(_, opts)
-      local npairs = require "nvim-autopairs"
+      local npairs = require("nvim-autopairs")
       npairs.setup(opts)
       if not vim.g.autopairs_enabled then npairs.disable() end
 
@@ -646,7 +647,34 @@ return {
         toggle_key_flip_floatwin_setting = is_enabled
       }
     end,
-    config = function(_, opts) require 'lsp_signature'.setup(opts) end
+    config = function(_, opts) require('lsp_signature').setup(opts) end
+  },
+
+  -- nvim-lightbulb [lightbulb for code actions]
+  -- https://github.com/kosayoda/nvim-lightbulb
+  -- Show a lightbulb where a code action is available
+  {
+    'kosayoda/nvim-lightbulb',
+    enabled = vim.g.codeactions_enabled,
+    event = "VeryLazy",
+    opts = {
+      action_kinds = {  -- show only for relevant code actions.
+        "quickfix",
+      },
+      ignore = {
+        ft = { "lua" }, -- ignore filetypes with bad code actions.
+      },
+      autocmd = {
+        enabled = true,
+        updatetime = 100,
+      },
+      sign = { enabled = false },
+      virtual_text = {
+        enabled = true,
+        text = "💡"
+      }
+    },
+    config = function(_, opts) require("nvim-lightbulb").setup(opts) end
   },
 
   -- distroupdate.nvim [distro update]
@@ -664,7 +692,7 @@ return {
       "DistroUpdateRevert"
     },
     opts = function()
-      local utils = require "base.utils"
+      local utils = require("base.utils")
       local config_dir = utils.os_path(vim.fn.stdpath "config" .. "/lua/base/")
       return {
         channel = "stable", -- stable/nightly
