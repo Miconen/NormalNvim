@@ -275,6 +275,7 @@ return {
             "startify",
             "toggleterm",
             "Trouble",
+            "oil",
             "calltree"
           }
           if vim.tbl_contains(ignored_filetypes, vim.bo.filetype) then
