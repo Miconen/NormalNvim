@@ -128,6 +128,17 @@ return {
     event = "User BaseFile"
   },
 
+  -- mini.surround [surround motions]
+  -- https://github.com/echasnovski/mini.surround
+  {
+    "echasnovski/mini.surround",
+    event = "User BaseFile",
+    config = function()
+      local surround = require('mini.surround')
+      surround.setup()
+    end
+  },
+
   --  smart-splits [move and resize buffers]
   --  https://github.com/mrjones2014/smart-splits.nvim
   {
