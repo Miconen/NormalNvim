@@ -407,12 +407,13 @@ return {
           ["<C-n>"] = cmp.mapping.select_next_item {
             behavior = cmp.SelectBehavior.Insert,
           },
-          ["<C-k>"] = cmp.mapping.select_prev_item {
-            behavior = cmp.SelectBehavior.Insert,
-          },
-          ["<C-j>"] = cmp.mapping.select_next_item {
-            behavior = cmp.SelectBehavior.Insert,
-          },
+          -- CURRENTLY USED FOR COPILOT
+          -- ["<C-k>"] = cmp.mapping.select_prev_item {
+          --   behavior = cmp.SelectBehavior.Insert,
+          -- },
+          -- ["<C-j>"] = cmp.mapping.select_next_item {
+          --   behavior = cmp.SelectBehavior.Insert,
+          -- },
           ["<C-u>"] = cmp.mapping(cmp.mapping.scroll_docs(-4), { "i", "c" }),
           ["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(4), { "i", "c" }),
           ["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
@@ -443,6 +444,7 @@ return {
             end
           end, { "i", "s" }),
         },
+
         sources = cmp.config.sources {
           { name = "nvim_lsp", priority = 1000 },
           { name = "luasnip",  priority = 750 },

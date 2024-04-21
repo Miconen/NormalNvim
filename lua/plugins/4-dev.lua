@@ -241,8 +241,8 @@ return {
     opts = {
       notify = { enabled = false },
       panel = {
-          orientation = "bottom",
-          panel_size = 10,
+        orientation = "bottom",
+        panel_size = 10,
       },
     },
     config = function(_, opts)
@@ -275,8 +275,10 @@ return {
               vim.wo.colorcolumn = "0"
               vim.wo.foldcolumn = "0"
               vim.cmd("silent! PinBuffer") -- stickybuf.nvim
-              vim.cmd("silent! hi LTSymbolJump ctermfg=015 ctermbg=110 cterm=italic,bold,underline guifg=#464646 guibg=#87afd7 gui=italic,bold")
-              vim.cmd("silent! hi LTSymbolJumpRefs ctermfg=015 ctermbg=110 cterm=italic,bold,underline guifg=#464646 guibg=#87afd7 gui=italic,bold")
+              vim.cmd(
+                "silent! hi LTSymbolJump ctermfg=015 ctermbg=110 cterm=italic,bold,underline guifg=#464646 guibg=#87afd7 gui=italic,bold")
+              vim.cmd(
+                "silent! hi LTSymbolJumpRefs ctermfg=015 ctermbg=110 cterm=italic,bold,underline guifg=#464646 guibg=#87afd7 gui=italic,bold")
             else
               vim.cmd("silent! highlight clear LTSymbolJump")
               vim.cmd("silent! highlight clear LTSymbolJumpRefs")
@@ -353,15 +355,49 @@ return {
   --  As alternative to chatgpt, you can use copilot uncommenting this.
   --  Then you must run :Copilot setup
   {
-    "github/copilot.vim",
-    event = "User BaseFile"
+    "zbirenbaum/copilot.lua",
+    event = "User BaseFile",
+    config = function()
+      vim.g.copilot_no_tab_map = true
+      require("copilot").setup({
+        panel = {
+          enabled = true,
+          auto_refresh = true,
+          keymap = {
+            jump_next = "<c-j>",
+            jump_prev = "<c-k>",
+            accept = "<c-a>",
+            refresh = "r",
+            open = "<M-CR>",
+          },
+          layout = {
+            position = "bottom",             -- | top | left | right
+            ratio = 0.4,
+          },
+        },
+        suggestion = {
+          enabled = true,
+          auto_trigger = true,
+          debounce = 75,
+          keymap = {
+            accept = "<c-a>",
+            accept_word = false,
+            accept_line = false,
+            next = "<c-j>",
+            prev = "<c-k>",
+            dismiss = "<C-e>",
+          },
+        },
+      }
+      )
+    end
   },
   -- copilot-cmp
   -- https://github.com/zbirenbaum/copilot-cmp
   {
     "zbirenbaum/copilot-cmp",
     opts = { suggesion = { enabled = false }, panel = { enabled = false } },
-    config = function (_, opts) require("copilot_cmp").setup(opts) end
+    config = function(_, opts) require("copilot_cmp").setup(opts) end
   },
 
   -- [guess-indent]
@@ -640,8 +676,8 @@ return {
           type = 'kotlin',
           request = 'launch',
           name = 'Launch kotlin program',
-          projectRoot = "${workspaceFolder}/app",     -- ensure this is correct
-          mainClass = "AppKt",                        -- ensure this is correct
+          projectRoot = "${workspaceFolder}/app", -- ensure this is correct
+          mainClass = "AppKt",                    -- ensure this is correct
         },
       }
 
