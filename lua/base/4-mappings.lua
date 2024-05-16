@@ -101,6 +101,18 @@ maps.n["<Tab>"] = {
   desc = "FIX: Prevent TAB from behaving like <C-i>, as they share the same internal code",
 }
 
+maps.n["<left>"] = { '<cmd>echo "Use h to move!!!<CR>"', desc = "Use h to move!!!" }
+maps.i["<left>"] = { '<cmd>echo "Use h to move!!!<CR>"', desc = "Use h to move!!!" }
+
+maps.n["<right>"] = { '<cmd>echo "Use l to move!!!<CR>"', desc = "Use l to move!!!" }
+maps.i["<right>"] = { '<cmd>echo "Use l to move!!!<CR>"', desc = "Use l to move!!!" }
+
+maps.n["<up>"] = { '<cmd>echo "Use k to move!!!<CR>"', desc = "Use k to move!!!" }
+maps.i["<up>"] = { '<cmd>echo "Use k to move!!!<CR>"', desc = "Use k to move!!!" }
+
+maps.n["<down>"] = { '<cmd>echo "Use j to move!!!<CR>"', desc = "Use j to move!!!" }
+maps.i["<down>"] = { '<cmd>echo "Use j to move!!!<CR>"', desc = "Use j to move!!!" }
+
 -- search highlighting ------------------------------------------------------
 -- use ESC to clear hlsearch, while preserving its original functionality.
 --
@@ -170,9 +182,9 @@ maps.x["G"] = {
 -- lazy
 maps.n["<leader>p"] = icons.p
 maps.n["<leader>pl"] =
-  { function() require("lazy").check() end, desc = "Lazy open" }
+{ function() require("lazy").check() end, desc = "Lazy open" }
 maps.n["<leader>pL"] =
-  { function() require("lazy").update() end, desc = "Lazy update" }
+{ function() require("lazy").update() end, desc = "Lazy update" }
 
 -- mason
 if is_available "mason.nvim" then
