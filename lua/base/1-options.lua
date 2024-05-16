@@ -61,6 +61,8 @@ vim.opt.scrolloff = 1000 -- Number of lines to leave before/after the cursor whe
 vim.opt.sidescrolloff = 8 -- Same but for side scrolling.
 vim.opt.selection = "old" -- Don't select the newline symbol when using <End> on visual mode.
 
+vim.opt.mouse = "" -- Disable mouse support.
+
 vim.opt.viewoptions:remove "curdir" -- Disable saving current directory with views.
 vim.opt.shortmess:append { s = true, I = true } -- Disable startup message.
 vim.opt.backspace:append { "nostop" } -- Don't stop backspace at insert.
