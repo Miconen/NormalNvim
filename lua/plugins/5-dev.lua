@@ -36,7 +36,6 @@
 
 --       ## TESTING
 --       -> neotest.nvim                   [unit testing]
---       -> nvim-coverage                  [code coverage]
 
 --       ## LANGUAGE IMPROVEMENTS
 --       -> guttentags_plus                [auto generate C/C++ tags]
@@ -195,7 +194,11 @@ return {
       backends = { "lsp", "treesitter", "markdown", "man" },
       disable_max_lines = vim.g.big_file.lines,
       disable_max_size = vim.g.big_file.size,
-      layout = { min_width = 28 },
+      layout = {
+        min_width = 28,
+        default_direction = "right",
+        placement = "edge",
+      },
       show_guides = true,
       guides = {
         mid_item = "├ ",
@@ -216,14 +219,14 @@ return {
     },
     config = function(_, opts)
       require("aerial").setup(opts)
-      -- HACK: The first time you opened aerial on a session, close all folds.
-      vim.api.nvim_create_autocmd("FileType", {
-        desc = "Aerial: The first time its open on a session, close all folds.",
+      -- HACK: The first time you open aerial on a session, close all folds.
+      vim.api.nvim_create_autocmd({"FileType", "BufEnter"}, {
+        desc = "Aerial: When aerial is opened, close all its folds.",
         callback = function()
           local is_aerial = vim.bo.filetype == "aerial"
           local is_ufo_available = require("base.utils").is_available("nvim-ufo")
-          if is_ufo_available and is_aerial and vim.g.new_aerial_session == nil then
-            vim.g.new_aerial_session = false
+          if is_ufo_available and is_aerial and vim.b.new_aerial_session == nil then
+            vim.b.new_aerial_session = false
             require("aerial").tree_set_collapse_level(0, 0)
           end
         end,
@@ -324,30 +327,6 @@ return {
     build = "yarn global add markmap-cli",
     cmd = { "MarkmapOpen", "MarkmapSave", "MarkmapWatch", "MarkmapWatchStop" },
     config = function(_, opts) require("markmap").setup(opts) end,
-  },
-
-  --  ARTIFICIAL INTELLIGENCE  -------------------------------------------------
-  --  neural [chatgpt code generator]
-  --  https://github.com/dense-analysis/neural
-  --
-  --  NOTE: In order for this plugin to work, you will have to set
-  --        the next env var in your OS:
-  --        OPENAI_API_KEY="my_key_here"
-  {
-    "dense-analysis/neural",
-    cmd = { "Neural" },
-    config = function()
-      require("neural").setup {
-        source = {
-          openai = {
-            api_key = vim.env.OPENAI_API_KEY,
-          },
-        },
-        ui = {
-          prompt_icon = ">",
-        },
-      }
-    end,
   },
 
   --  copilot [github code suggestions]
@@ -907,32 +886,6 @@ return {
       }, neotest_ns)
       require("neotest").setup(opts)
     end,
-  },
-
-  --  Shows a float panel with the [code coverage]
-  --  https://github.com/andythigpen/nvim-coverage
-  --
-  --  Your project must generate coverage/lcov.info for this to work.
-  --
-  --  On jest, make sure your packages.json file has this:
-  --  "tests": "jest --coverage"
-  --
-  --  If you use other framework or language, refer to nvim-coverage docs:
-  --  https://github.com/andythigpen/nvim-coverage/blob/main/doc/nvim-coverage.txt
-  {
-    "andythigpen/nvim-coverage",
-    cmd = {
-      "Coverage",
-      "CoverageLoad",
-      "CoverageLoadLcov",
-      "CoverageShow",
-      "CoverageHide",
-      "CoverageToggle",
-      "CoverageClear",
-      "CoverageSummary",
-    },
-    dependencies = { "nvim-lua/plenary.nvim" },
-    config = function() require("coverage").setup() end,
   },
 
   -- LANGUAGE IMPROVEMENTS ----------------------------------------------------

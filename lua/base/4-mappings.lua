@@ -1,42 +1,5 @@
 -- Keybindings (qwerty).
 
--- DESCRIPTION:
--- All mappings are defined here.
-
---    Sections:
---
---       ## Base bindings
---       -> icons displayed on which-key.nvim
---       -> standard operations
---       -> clipboard
---       -> search highlighting
---       -> improved tabulation
---       -> improved gg
---       -> packages
---       -> ui toggles                         [ui]
---       -> shifted movement keys
---       -> cmdline autocompletion
---       -> special cases
-
---       ## Plugin bindings
---       -> alpha-nvim
---       -> git                                [git]
---       -> file browsers
---       -> session manager
---       -> smart-splits.nvim
---       -> aerial.nvim
---       -> litee-calltree.nvim
---       -> telescope.nivm                     [find]
---       -> toggleterm.nvim
---       -> dap.nvim                           [debugger]
---       -> tests                              [tests]
---       -> nvim-ufo
---       -> code documentation                 [docs]
---       -> ask chatgpt                        [neural]
---       -> hop.nvim
---       -> mason-lspconfig.nvim               [lsp]
-
---
 --   KEYBINDINGS REFERENCE
 --   -------------------------------------------------------------------
 --   |        Mode  | Norm | Ins | Cmd | Vis | Sel | Opr | Term | Lang |
@@ -60,7 +23,6 @@ local get_icon = utils.get_icon
 local is_available = utils.is_available
 local ui = require "base.utils.ui"
 local maps = require("base.utils").get_mappings_template()
-local is_android = vim.fn.isdirectory('/data') == 1 -- true if on android
 
 -- -------------------------------------------------------------------------
 --
@@ -83,6 +45,8 @@ local icons = {
   g = { desc = get_icon("Git", 1, true) .. "Git" },
   S = { desc = get_icon("Session", 1, true) .. "Session" },
   t = { desc = get_icon("Terminal", 1, true) .. "Terminal" },
+  f = { desc = get_icon("Sort", 1, true) .. "Folds" },
+  x = { desc = get_icon("Diagnostic", 1, true) .. "Diagnostics" },
 }
 
 -- standard Operations -----------------------------------------------------
@@ -100,18 +64,6 @@ maps.n["<Tab>"] = {
   expr = false,
   desc = "FIX: Prevent TAB from behaving like <C-i>, as they share the same internal code",
 }
-
-maps.n["<left>"] = { '<cmd>echo "Use h to move!!!<CR>"', desc = "Use h to move!!!" }
-maps.i["<left>"] = { '<cmd>echo "Use h to move!!!<CR>"', desc = "Use h to move!!!" }
-
-maps.n["<right>"] = { '<cmd>echo "Use l to move!!!<CR>"', desc = "Use l to move!!!" }
-maps.i["<right>"] = { '<cmd>echo "Use l to move!!!<CR>"', desc = "Use l to move!!!" }
-
-maps.n["<up>"] = { '<cmd>echo "Use k to move!!!<CR>"', desc = "Use k to move!!!" }
-maps.i["<up>"] = { '<cmd>echo "Use k to move!!!<CR>"', desc = "Use k to move!!!" }
-
-maps.n["<down>"] = { '<cmd>echo "Use j to move!!!<CR>"', desc = "Use j to move!!!" }
-maps.i["<down>"] = { '<cmd>echo "Use j to move!!!<CR>"', desc = "Use j to move!!!" }
 
 -- search highlighting ------------------------------------------------------
 -- use ESC to clear hlsearch, while preserving its original functionality.
@@ -139,41 +91,33 @@ maps.x[">"] = { ">gv", desc = "indent line" }
 -- improved gg --------------------------------------------------------------
 maps.n["gg"] = {
   function()
-    vim.g.minianimate_disable = true
     if vim.v.count > 0 then
       vim.cmd("normal! " .. vim.v.count .. "gg")
     else
       vim.cmd "normal! gg0"
     end
-    vim.g.minianimate_disable = false
   end,
   desc = "gg and go to the first position",
 }
 maps.n["G"] = {
   function()
-    vim.g.minianimate_disable = true
     vim.cmd "normal! G$"
-    vim.g.minianimate_disable = false
   end,
   desc = "G and go to the last position",
 }
 maps.x["gg"] = {
   function()
-    vim.g.minianimate_disable = true
     if vim.v.count > 0 then
       vim.cmd("normal! " .. vim.v.count .. "gg")
     else
       vim.cmd "normal! gg0"
     end
-    vim.g.minianimate_disable = false
   end,
   desc = "gg and go to the first position (visual)",
 }
 maps.x["G"] = {
   function()
-    vim.g.minianimate_disable = true
     vim.cmd "normal! G$"
-    vim.g.minianimate_disable = false
   end,
   desc = "G and go to the last position (visual)",
 }
@@ -194,24 +138,13 @@ end
 
 -- treesitter
 if is_available "nvim-treesitter" then
-  maps.n["<leader>pT"] = { "<cmd>TSUpdate<cr>", desc = "Treesitter update" }
   maps.n["<leader>pt"] = { "<cmd>TSInstallInfo<cr>", desc = "Treesitter open" }
+  maps.n["<leader>pT"] = { "<cmd>TSUpdate<cr>", desc = "Treesitter update" }
 end
-
--- nvim updater
-maps.n["<leader>pD"] = { "<cmd>DistroUpdate<cr>", desc = "Distro update" }
-maps.n["<leader>pv"] = { "<cmd>DistroReadVersion<cr>", desc = "Distro version" }
-maps.n["<leader>pc"] = { "<cmd>DistroReadChangelog<cr>", desc = "Distro changelog" }
 
 -- tabs
 maps.n["]t"] = { function() vim.cmd.tabnext() end, desc = "Next tab" }
 maps.n["[t"] = { function() vim.cmd.tabprevious() end, desc = "Previous tab" }
-
--- zen mode
-if is_available "zen-mode.nvim" then
-  maps.n["<leader>uz"] =
-  { function() ui.toggle_zen_mode() end, desc = "Zen mode" }
-end
 
 -- ui toggles [ui] ---------------------------------------------------------
 maps.n["<leader>u"] = icons.u
@@ -226,26 +159,14 @@ if is_available "nvim-colorizer.lua" then
   maps.n["<leader>uC"] =
   { "<cmd>ColorizerToggle<cr>", desc = "color highlight" }
 end
-maps.n["<leader>ud"] = { ui.toggle_diagnostics, desc = "Diagnostics" }
 maps.n["<leader>uD"] = { ui.set_indent, desc = "Change indent setting" }
-maps.n["<leader>ug"] = { ui.toggle_signcolumn, desc = "Signcolumn" }
-maps.n["<leader>ul"] = { ui.toggle_statusline, desc = "Statusline" }
 maps.n["<leader>un"] = { ui.change_number, desc = "Change line numbering" }
-maps.n["<leader>uP"] = { ui.toggle_paste, desc = "Paste mode" }
 maps.n["<leader>us"] = { ui.toggle_spell, desc = "Spellcheck" }
-maps.n["<leader>uS"] = { ui.toggle_conceal, desc = "Conceal" }
-maps.n["<leader>ut"] = { ui.toggle_tabline, desc = "Tabline" }
-maps.n["<leader>uu"] = { ui.toggle_url_effect, desc = "URL highlight" }
 maps.n["<leader>uw"] = { ui.toggle_wrap, desc = "Wrap" }
-maps.n["<leader>uy"] = { ui.toggle_buffer_syntax, desc = "Syntax highlight (buffer)" }
-maps.n["<leader>uh"] = { ui.toggle_foldcolumn, desc = "Foldcolumn" }
 maps.n["<leader>uN"] =
 { ui.toggle_ui_notifications, desc = "UI notifications" }
 if is_available "lsp_signature.nvim" then
   maps.n["<leader>up"] = { ui.toggle_lsp_signature, desc = "LSP signature" }
-end
-if is_available "mini.animate" then
-  maps.n["<leader>uA"] = { ui.toggle_animations, desc = "Animations" }
 end
 if is_available "telescope.nvim" then
   maps.n["<leader>uT"] = {
@@ -263,62 +184,6 @@ if is_available "telescope.nvim" then
   }
 end
 
--- shifted movement keys ----------------------------------------------------
-maps.n["<S-Down>"] = {
-  function() vim.api.nvim_feedkeys("7j", "n", true) end,
-  desc = "Fast move down",
-}
-maps.n["<S-Up>"] = {
-  function() vim.api.nvim_feedkeys("7k", "n", true) end,
-  desc = "Fast move up",
-}
-maps.n["<S-PageDown>"] = {
-  function()
-    local current_line = vim.fn.line "."
-    local total_lines = vim.fn.line "$"
-    local target_line = current_line + 1 + math.floor(total_lines * 0.20)
-    if target_line > total_lines then target_line = total_lines end
-    vim.api.nvim_win_set_cursor(0, { target_line, 0 })
-    vim.cmd "normal! zz"
-  end,
-  desc = "Page down exactly a 20% of the total size of the buffer",
-}
-maps.n["<S-PageUp>"] = {
-  function()
-    local current_line = vim.fn.line "."
-    local target_line = current_line - 1 - math.floor(vim.fn.line "$" * 0.20)
-    if target_line < 1 then target_line = 1 end
-    vim.api.nvim_win_set_cursor(0, { target_line, 0 })
-    vim.cmd "normal! zz"
-  end,
-  desc = "Page up exactly 20% of the total size of the buffer",
-}
-
--- cmdline autocompletion ---------------------------------------------------
-maps.c["<Up>"] = {
-  function() return vim.fn.wildmenumode() == 1 and "<Left>" or "<Up>" end,
-  noremap = true,
-  expr = true,
-  desc = "Wildmenu fix for neovim bug #9953",
-}
-maps.c["<Down>"] = {
-  function() return vim.fn.wildmenumode() == 1 and "<Right>" or "<Down>" end,
-  noremap = true,
-  expr = true,
-  desc = "Wildmenu fix for neovim bug #9953",
-}
-maps.c["<Left>"] = {
-  function() return vim.fn.wildmenumode() == 1 and "<Up>" or "<Left>" end,
-  noremap = true,
-  expr = true,
-  desc = "Wildmenu fix for neovim bug #9953",
-}
-maps.c["<Right>"] = {
-  function() return vim.fn.wildmenumode() == 1 and "<Down>" or "<Right>" end,
-  noremap = true,
-  expr = true,
-  desc = "Wildmenu fix for neovim bug #9953",
-}
 
 -- special cases ------------------------------------------------------------
 vim.api.nvim_create_autocmd("BufWinEnter", {
@@ -454,60 +319,11 @@ if vim.fn.executable "gitui" == 1 then -- if gitui exists, show it
     desc = "ToggleTerm gitui",
   }
 end
--- telescope.nvim
-maps.n["<leader>gt"] = {
-  function() require("telescope.builtin").git_status() end,
-  desc = "Git status",
-}
 
 -- file browsers ------------------------------------
 -- oil.nvim
 if is_available "oil.nvim" then
   maps.n["-"] = { "<cmd>Oil --float<cr>", desc = "Oil" }
-end
-
--- session manager ---------------------------------------------------------
-if is_available "neovim-session-manager" then
-  maps.n["<leader>S"] = icons.S
-  maps.n["<leader>Sl"] = {
-    "<cmd>SessionManager! load_last_session<cr>",
-    desc = "Load last session",
-  }
-  maps.n["<leader>Ss"] = {
-    "<cmd>SessionManager! save_current_session<cr>",
-    desc = "Save this session",
-  }
-  maps.n["<leader>Sd"] =
-  { "<cmd>SessionManager! delete_session<cr>", desc = "Delete session" }
-  maps.n["<leader>Sf"] =
-  { "<cmd>SessionManager! load_session<cr>", desc = "Search sessions" }
-  maps.n["<leader>S."] = {
-    "<cmd>SessionManager! load_current_dir_session<cr>",
-    desc = "Load current directory session",
-  }
-end
-if is_available "resession.nvim" then
-  maps.n["<leader>S"] = icons.S
-  maps.n["<leader>Sl"] = {
-    function() require("resession").load "Last Session" end,
-    desc = "Load last session",
-  }
-  maps.n["<leader>Ss"] =
-  { function() require("resession").save() end, desc = "Save this session" }
-  maps.n["<leader>St"] = {
-    function() require("resession").save_tab() end,
-    desc = "Save this tab's session",
-  }
-  maps.n["<leader>Sd"] =
-  { function() require("resession").delete() end, desc = "Delete a session" }
-  maps.n["<leader>Sf"] =
-  { function() require("resession").load() end, desc = "Load a session" }
-  maps.n["<leader>S."] = {
-    function()
-      require("resession").load(vim.fn.getcwd(), { dir = "dirsession" })
-    end,
-    desc = "Load current directory session",
-  }
 end
 
 -- smart-splits.nivm
@@ -731,14 +547,6 @@ if is_available "telescope.nvim" then
     end,
     desc = "Search symbol in buffer", -- Useful to find every time a variable is assigned.
   }
-
-  -- extra - project.nvim
-  if is_available "project.nvim" then
-    maps.n["<leader>sp"] = {
-      function() vim.cmd "Telescope projects" end,
-      desc = "Find project",
-    }
-  end
 
   -- extra - spectre.nvim (search and replace in project)
   if is_available "nvim-spectre" then
@@ -969,28 +777,6 @@ if is_available "neotest" then
   }
 end
 
--- Extra - nvim-coverage
---         Your project must generate coverage/lcov.info for this to work.
---
---         On jest, make sure your packages.json file has this:
---         "test": "jest --coverage"
---
---         If you use other framework or language, refer to nvim-coverage docs:
---         https://github.com/andythigpen/nvim-coverage/blob/main/doc/nvim-coverage.txt
-if is_available "nvim-coverage" then
-  maps.n["<leader>Tc"] = {
-    function()
-      utils.notify(
-        "Attempting to find coverage/lcov.info in project root...",
-        vim.log.levels.INFO
-      )
-      require("coverage").load(false)
-      require("coverage").summary()
-    end,
-    desc = "Coverage",
-  }
-end
-
 -- Extra - nodejs testing commands
 maps.n["<leader>Ta"] = {
   function() vim.cmd "TestNodejs" end,
@@ -1003,29 +789,15 @@ maps.n["<leader>Te"] = {
 
 -- nvim-ufo [code folding] --------------------------------------------------
 if is_available "nvim-ufo" then
-  maps.n["zR"] =
+  maps.n["<leader>f"] = icons.f
+
+  maps.n["<leader>fo"] =
   { function() require("ufo").openAllFolds() end, desc = "Open all folds" }
-  maps.n["zM"] =
+  maps.n["<leader>fc"] =
   { function() require("ufo").closeAllFolds() end, desc = "Close all folds" }
-  maps.n["zr"] = {
-    function() require("ufo").openFoldsExceptKinds() end,
-    desc = "Fold less",
-  }
-  maps.n["zm"] =
-  { function() require("ufo").closeFoldsWith() end, desc = "Fold more" }
-  maps.n["zp"] = {
+  maps.n["<leader>fp"] = {
     function() require("ufo").peekFoldedLinesUnderCursor() end,
     desc = "Peek fold",
-  }
-  maps.n["zn"] =
-  {
-    function() require("ufo").openFoldsExceptKinds({ 'comment' }) end,
-    desc = "Fold comments"
-  }
-  maps.n["zN"] =
-  {
-    function() require("ufo").openFoldsExceptKinds({ 'region' }) end,
-    desc = "Fold region"
   }
 end
 
@@ -1046,11 +818,7 @@ if is_available "markdown-preview.nvim" or is_available "markmap.nvim" or is_ava
   if is_available "markmap.nvim" then
     maps.n["<leader>Dm"] = {
       function()
-        if is_android then
-          vim.cmd "MarkmapWatch"
-        else
-          vim.cmd "MarkmapOpen"
-        end
+        vim.cmd "MarkmapOpen"
       end,
       desc = "Markmap",
     }
@@ -1062,14 +830,6 @@ if is_available "markdown-preview.nvim" or is_available "markmap.nvim" or is_ava
       desc = "Open documentation",
     }
   end
-end
-
--- [neural] -----------------------------------------------------------------
-if is_available "neural" or is_available "copilot" then
-  maps.n["<leader>a"] = {
-    function() require("neural").prompt() end,
-    desc = "Ask chatgpt",
-  }
 end
 
 -- hop.nivm ----------------------------------------------------------------
@@ -1112,12 +872,12 @@ function M.lsp_mappings(client, bufnr)
   end
 
   local lsp_mappings = require("base.utils").get_mappings_template()
-  lsp_mappings.n["<leader>ld"] = { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
+  lsp_mappings.n["<leader>lK"] = { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
   lsp_mappings.n["gE"] = { function() vim.diagnostic.goto_prev() end, desc = "Previous diagnostic" }
   lsp_mappings.n["ge"] = { function() vim.diagnostic.goto_next() end, desc = "Next diagnostic" }
 
   if is_available "telescope.nvim" then
-    lsp_mappings.n["<leader>lD"] =
+    lsp_mappings.n["<leader>ld"] =
     { function() require("telescope.builtin").diagnostics() end, desc = "Diagnostics" }
   end
 
@@ -1180,7 +940,10 @@ function M.lsp_mappings(client, bufnr)
   if client.supports_method "textDocument/formatting"
       and not vim.tbl_contains(formatting.disabled, client.name) then
     lsp_mappings.n["<leader>lf"] = {
-      function() vim.lsp.buf.format(M.format_opts) end,
+      function()
+        vim.lsp.buf.format(M.format_opts)
+        vim.cmd('checktime') -- update buffer to reflect changes.
+      end,
       desc = "Format buffer",
     }
     lsp_mappings.v["<leader>lf"] = lsp_mappings.n["<leader>lf"]
@@ -1308,18 +1071,6 @@ function M.lsp_mappings(client, bufnr)
   if client.supports_method "workspace/symbol" then
     lsp_mappings.n["<leader>lS"] = { function() vim.lsp.buf.workspace_symbol() end, desc = "Search symbol in workspace" }
     lsp_mappings.n["gS"] = { function() vim.lsp.buf.workspace_symbol() end, desc = "Search symbol in workspace" }
-  end
-
-  if client.supports_method "textDocument/semanticTokens/full" and vim.lsp.semantic_tokens then
-    if vim.g.semantic_tokens_enabled then
-      vim.b[bufnr].semantic_tokens_enabled = true
-      lsp_mappings.n["<leader>uY"] = {
-        function() require("base.utils.ui").toggle_buffer_semantic_tokens(bufnr) end,
-        desc = "LSP semantic highlight (buffer)",
-      }
-    else
-      client.server_capabilities.semanticTokensProvider = nil
-    end
   end
 
   if is_available "telescope.nvim" then -- setup telescope mappings if available

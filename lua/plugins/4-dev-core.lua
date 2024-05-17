@@ -69,7 +69,11 @@ return {
       matchup = {
         enable = true,
         enable_quotes = true,
-        disable = function(_, bufnr) return utils.is_big_file(bufnr) end,
+        disable = function(_, bufnr)
+          local excluded_filetypes = { "c" } -- disable for slow parsers
+          local is_disabled = excluded_filetypes or utils.is_big_file(bufnr)
+          return is_disabled
+        end,
       },
       incremental_selection = { enable = true },
       indent = { enable = true },
@@ -264,15 +268,27 @@ return {
   --  https://github.com/nvimtools/none-ls.nvim
   {
     "nvimtools/none-ls.nvim",
-    dependencies = { "jay-babu/mason-null-ls.nvim" },
+    dependencies = {
+      "jay-babu/mason-null-ls.nvim",
+      "nvimtools/none-ls-extras.nvim",
+    },
     event = "User BaseFile",
     opts = function()
-      -- You can customize your formatters here.
-      local nls = require("null-ls")
-      nls.builtins.formatting.shfmt.with({
+      local builtins = require("null-ls").builtins
+      local sources = require("null-ls.sources")
+
+      -- You can customize your builtins here.
+      builtins.formatting.shfmt.with({
         command = "shfmt",
         args = { "-i", "2", "-filename", "$FILENAME" },
       })
+
+      -- You can register external sources from none-ls-extras here.
+      local gherkin_source = require("none-ls.formatting.reformat_gherkin")
+      local gherkin_cmd = gherkin_source._opts.command
+      if vim.fn.executable(gherkin_cmd) == 1 then
+        sources.register(gherkin_source)
+      end
 
       -- Attach the user lsp mappings to every none-ls client.
       return { on_attach = utils_lsp.apply_user_lsp_mappings }

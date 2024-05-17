@@ -17,9 +17,6 @@ function M.check()
   health.start "NormalNvim"
 
   health.info(
-    "NormalNvim Version: " .. require("distroupdate.utils.updater").version(true)
-  )
-  health.info(
     "Neovim Version: v"
     .. vim.fn.matchstr(vim.fn.execute "version", "NVIM v\\zs[^\n]*")
   )

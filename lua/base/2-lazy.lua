@@ -1,18 +1,4 @@
--- Lazy.nvim config file.
-
--- DESCRIPTION:
--- Use this file to configure the way you get updates.
-
---    Sections:
---
---      -> lazy updater options  → choose your lazy updates channel here.
---      -> extra behaviors       → extra stuff we add to lazy for better UX.
---      -> assign spec           → if channel==stable, uses lazy_snatshot.lua
---      -> setup using spec      → actual setup.
-
-
 -- lazy updater options
--- Use the same values you have in the plugin `distroupdate.nvim`
 local updater = {
   channel = "stable",               -- 'nightly', or 'stable'
   snapshot_module = "lazy_snapshot" -- snapshot file name without extension.

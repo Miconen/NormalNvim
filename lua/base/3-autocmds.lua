@@ -1,27 +1,5 @@
 -- General usage autocmds.
 
--- DESCRIPTION:
--- All autocmds are defined here.
-
---    Sections:
---
---       ## EXTRA LOGIC
---       -> 1. Events to load plugins faster.
---       -> 2. Save/restore window layout when possible.
---       -> 3. Launch alpha greeter on startup.
---       -> 4. Update neotree when closing the git client.
---       -> 5. Create parent directories when saving a file.
---
---       ## COOL HACKS
---       -> 6. Effect: URL underline.
---       -> 7. Customize right click contextual menu.
---       -> 8. Unlist quickfix buffers if the filetype changes.
---       -> 9. Close all notifications on BufWritePre.
---
---       ## COMMANDS
---       -> 10. Neotest commands.
---       ->     Extra commands.
-
 local autocmd = vim.api.nvim_create_autocmd
 local cmd = vim.api.nvim_create_user_command
 local utils = require("base.utils")
@@ -161,30 +139,7 @@ if is_available "alpha-nvim" then
   })
 end
 
--- 4. Update neotree when closin the git client.
-if is_available "neo-tree.nvim" then
-  autocmd("TermClose", {
-    pattern = { "*lazygit", "*gitui" },
-    desc = "Refresh Neo-Tree git when closing lazygit/gitui",
-    callback = function()
-      local manager_avail, manager = pcall(require, "neo-tree.sources.manager")
-      if manager_avail then
-        for _, source in ipairs {
-          "filesystem",
-          "git_status",
-          "document_symbols",
-        } do
-          local module = "neo-tree.sources." .. source
-          if package.loaded[module] then
-            manager.refresh(require(module).name)
-          end
-        end
-      end
-    end,
-  })
-end
-
--- 5. Create parent directories when saving a file.
+-- 4. Create parent directories when saving a file.
 autocmd("BufWritePre", {
   desc = "Automatically create parent directories if they don't exist when saving a file",
   callback = function(args)
@@ -199,14 +154,14 @@ autocmd("BufWritePre", {
 })
 
 -- ## COOL HACKS ------------------------------------------------------------
--- 6. Effect: URL underline.
+-- 5. Effect: URL underline.
 vim.api.nvim_set_hl(0, 'HighlightURL', { underline = true })
 autocmd({ "VimEnter", "FileType", "BufEnter", "WinEnter" }, {
   desc = "URL Highlighting",
   callback = function() utils.set_url_effect() end,
 })
 
--- 7. Customize right click contextual menu.
+-- 6. Customize right click contextual menu.
 autocmd("VimEnter", {
   desc = "Disable right contextual menu warning message",
   callback = function()
@@ -221,7 +176,7 @@ autocmd("VimEnter", {
   end,
 })
 
--- 8. Unlist quickfix buffers if the filetype changes.
+-- 7. Unlist quickfix buffers if the filetype changes.
 autocmd("FileType", {
   desc = "Unlist quickfist buffers",
   pattern = "qf",
@@ -238,14 +193,14 @@ autocmd("BufWritePre", {
 
 -- ## COMMANDS --------------------------------------------------------------
 
--- 10. Testing commands
+-- 9. Testing commands
 -- Aditional commands to the ones implemented in neotest.
 -------------------------------------------------------------------
 
 -- Customize this command to work as you like
 cmd("TestNodejs", function()
-  vim.cmd ":ProjectRoot"                  -- cd the project root (requires project.nvim)
-  vim.cmd ":TermExec cmd='npm run tests'" -- convention to run tests on nodejs
+  vim.cmd ":ProjectRoot"                 -- cd the project root (requires project.nvim)
+  vim.cmd ":TermExec cmd='npm run test'" -- convention to run tests on nodejs
   -- You can generate code coverage by add this to your project's packages.json
   -- "tests": "jest --coverage"
 end, { desc = "Run all unit tests for the current nodejs project" })
