@@ -38,7 +38,8 @@ local icons = {
   u = { desc = get_icon("Window", 1, true) .. "UI" },
   b = { desc = get_icon("Tab", 1, true) .. "Buffers" },
   bs = { desc = get_icon("Sort", 1, true) .. "Sort Buffers" },
-  c = { desc = get_icon("Run", 1, true) .. "Compiler" },
+  c = { desc = get_icon("Robot", 1, true) .. "Copilot" },
+  cc = { desc = get_icon("Run", 1, true) .. "Compiler" },
   d = { desc = get_icon("Debugger", 1, true) .. "Debugger" },
   tt = { desc = get_icon("Test", 1, true) .. "Test" },
   dc = { desc = get_icon("Docs", 1, true) .. "Docs" },
@@ -217,6 +218,8 @@ vim.api.nvim_create_autocmd("CmdwinEnter", {
 
 -- alpha-nvim --------------------------------------------------------------
 if is_available "alpha-nvim" then
+  local description = get_icon("Home", 1, true) .. "Home screen"
+
   maps.n["<leader>h"] = {
     function()
       local wins = vim.api.nvim_tabpage_list_wins(0)
@@ -229,7 +232,7 @@ if is_available "alpha-nvim" then
       require("alpha").start(false, require("alpha").default_config)
       vim.b.miniindentscope_disable = true
     end,
-    desc = "Home screen",
+    desc = description,
   }
 end
 
@@ -375,8 +378,10 @@ end
 
 -- aerial.nvimm ------------------------------------------------------------
 if is_available "aerial.nvim" then
+  local description = get_icon("Symbol", 1, true) .. "Aerial"
+
   maps.n["<leader>i"] =
-  { function() require("aerial").toggle() end, desc = "Aerial" }
+  { function() require("aerial").toggle() end, desc = description }
 end
 
 -- letee-calltree.nvimm ------------------------------------------------------------
@@ -591,7 +596,7 @@ if is_available "telescope.nvim" then
 
   -- extra - compiler
   if is_available "compiler.nvim" and is_available "overseer.nvim" then
-    maps.n["<leader>m"] = icons.c
+    maps.n["<leader>m"] = icons.cc
     maps.n["<leader>mm"] = {
       function() vim.cmd "CompilerOpen" end,
       desc = "Open compiler",
@@ -853,7 +858,22 @@ if is_available "hop.nvim" then
   }
 end
 
--- mason-lspconfig.nvim [lsp] -------------------------------------------------
+-- copilot.lua -------------------------------------------------------------
+if is_available "copilot.lua" then
+  maps.n["<leader>c"] = icons.c
+
+  maps.n["<leader>ce"] = {
+    "<cmd>Copilot enable<CR><cmd>Copilot attach<CR>",
+    desc = "Enable copilot",
+  }
+
+  maps.n["<leader>cd"] = {
+    "<cmd>Copilot disable<CR>",
+    desc = "Disable copilot",
+  }
+end
+
+-- mason-lspconfig.nvim [lsp] ----------------------------------------------
 -- WARNING: Don't delete this section, or you won't have LSP keymappings
 
 -- A function we call from the script to start lsp.

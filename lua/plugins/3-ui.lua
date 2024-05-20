@@ -158,10 +158,10 @@ return {
   -- https://github.com/Zeioth/heirline-components.nvim
   -- Collection of components to use on your heirline config.
   -- {
-    -- "zeioth/heirline-components.nvim",
-    -- opts = {
-      -- icons = require("base.icons.nerd_font"),
-    -- }
+  -- "zeioth/heirline-components.nvim",
+  -- opts = {
+  -- icons = require("base.icons.nerd_font"),
+  -- }
   -- },
 
   --  heirline [ui components]
@@ -365,7 +365,7 @@ return {
           smart_move = { enabled = false },
         },
       }
-    end
+    end,
   },
 
   --  UI icons [icons]

@@ -70,4 +70,7 @@ return {
   WordFile = "󰈭",
   Test = "󰙨",
   Docs = "",
+  Robot = "󰚩",
+  Symbol = "",
+  Home = "",
 }
