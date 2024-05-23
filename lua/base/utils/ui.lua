@@ -100,10 +100,30 @@ end
 
 --- Toggle lsp signature
 function M.toggle_lsp_signature()
---       -> neotest.nvim                   [unit testing]
-
   local state = require('lsp_signature').toggle_float_win()
   utils.notify(string.format("lsp signature %s", bool2str(state)))
+end
+
+--- Toggle Hardtime
+function M.toggle_hardtime()
+  local ok, hardtime = pcall(require, "hardtime")
+  if ok then
+    hardtime.toggle()
+    utils.notify(string.format("hardtime %s", bool2str(hardtime.is_plugin_enabled)))
+  else
+    utils.notify "hardtime not available"
+  end
+end
+
+--- Toggle Precogntion
+function M.toggle_precognition()
+  local ok, precognition = pcall(require, "hardtime")
+  if ok then
+    precognition.toggle()
+    utils.notify(string.format("precognition %s", bool2str(precognition.is_plugin_enabled)))
+  else
+    utils.notify "precognition not available"
+  end
 end
 
 --- Toggle spell

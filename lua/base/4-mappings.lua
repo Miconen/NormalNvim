@@ -156,6 +156,12 @@ maps.n["<leader>ub"] = { ui.toggle_background, desc = "Background" }
 if is_available "nvim-cmp" then
   maps.n["<leader>uc"] = { ui.toggle_cmp, desc = "Autocompletion" }
 end
+if is_available "hardtime.nvim" then
+  maps.n["<leader>uh"] = { ui.toggle_hardtime, desc = "Hardtime" }
+end
+if is_available "precognition.nvim" then
+  maps.n["<leader>up"] = { ui.toggle_precognition, desc = "Precognition" }
+end
 if is_available "nvim-colorizer.lua" then
   maps.n["<leader>uC"] =
   { "<cmd>ColorizerToggle<cr>", desc = "color highlight" }
@@ -167,7 +173,7 @@ maps.n["<leader>uw"] = { ui.toggle_wrap, desc = "Wrap" }
 maps.n["<leader>uN"] =
 { ui.toggle_ui_notifications, desc = "UI notifications" }
 if is_available "lsp_signature.nvim" then
-  maps.n["<leader>up"] = { ui.toggle_lsp_signature, desc = "LSP signature" }
+  maps.n["<leader>uP"] = { ui.toggle_lsp_signature, desc = "LSP signature" }
 end
 if is_available "telescope.nvim" then
   maps.n["<leader>uT"] = {
