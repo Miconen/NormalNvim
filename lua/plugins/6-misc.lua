@@ -58,4 +58,14 @@ return {
       require("hardtime").setup(opts)
     end,
   },
+
+  -- precognition.nvim
+  -- https://github.com/tris203/precognition.nvim
+  {
+    "https://github.com/tris203/precognition.nvim",
+    event = "User BaseFile",
+    config = function()
+      require("precognition").setup()
+    end,
+  }
 }
