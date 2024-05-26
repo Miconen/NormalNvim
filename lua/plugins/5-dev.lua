@@ -1,71 +1,9 @@
 -- Dev
 -- Things you actively use for coding.
 
---    Sections:
---       ## COMMENTS
---       -> comment.nvim                   [comment with a key]
-
---       ## SNIPPETS
---       -> luasnip                        [snippet engine]
---       -> friendly-snippets              [snippet templates]
-
---       ## GIT
---       -> gitsigns.nvim                  [git hunks]
---       -> fugitive.vim                   [git commands]
-
---       ## ANALYZER
---       -> aerial.nvim                    [symbols tree]
---       -> litee-calltree.nvim            [calltree]
-
---       ## CODE DOCUMENTATION
---       -> dooku.nvim                     [html doc generator]
---       -> markdown-preview.nvim          [markdown previewer]
---       -> markmap.nvim                   [markdown mindmap]
-
---       ## ARTIFICIAL INTELLIGENCE
---       -> neural                         [chatgpt code generator]
---       -> copilot                        [github code suggestions]
---       -> guess-indent                   [guess-indent]
-
---       ## COMPILER
---       -> compiler.nvim                  [compiler]
---       -> overseer.nvim                  [task runner]
-
---       ## DEBUGGER
---       -> nvim-dap                       [debugger]
-
---       ## TESTING
---       -> neotest.nvim                   [unit testing]
-
---       ## LANGUAGE IMPROVEMENTS
---       -> guttentags_plus                [auto generate C/C++ tags]
-
 local is_windows = vim.fn.has('win32') == 1 -- true if on windows
 
 return {
-  --  COMMENTS ----------------------------------------------------------------
-  --  Advanced comment features [comment with a key]
-  --  https://github.com/numToStr/Comment.nvim
-  {
-    "numToStr/Comment.nvim",
-    event = "User BaseFile",
-    opts = function()
-      -- improve performance, when possible
-      local _, ts_context_commentstring =
-          pcall(require, "ts_context_commentstring.integrations.comment_nvim")
-      local pre_hook = ts_context_commentstring.create_pre_hook() or nil
-
-      -- opts
-      return {
-        pre_hook = pre_hook
-      }
-    end,
-    keys = {
-      { "gc", mode = { "n", "v" }, desc = "Comment toggle linewise" },
-      { "gb", mode = { "n", "v" }, desc = "Comment toggle blockwise" },
-    },
-  },
-
   --  SNIPPETS ----------------------------------------------------------------
   --  Vim Snippets engine  [snippet engine] + [snippet templates]
   --  https://github.com/L3MON4D3/LuaSnip
@@ -75,7 +13,7 @@ return {
     build = not is_windows and "make install_jsregexp" or nil,
     dependencies = {
       "rafamadriz/friendly-snippets",
-      "Zeioth/NormalSnippets",
+      "zeioth/NormalSnippets",
       "benfowler/telescope-luasnip.nvim",
     },
     event = "User BaseFile",
@@ -294,9 +232,9 @@ return {
 
   --  CODE DOCUMENTATION ------------------------------------------------------
   --  dooku.nvim [html doc generator]
-  --  https://github.com/Zeioth/dooku.nvim
+  --  https://github.com/zeioth/dooku.nvim
   {
-    "Zeioth/dooku.nvim",
+    "zeioth/dooku.nvim",
     cmd = {
       "DookuGenerate",
       "DookuOpen",
@@ -320,10 +258,10 @@ return {
   },
 
   --  [markdown markmap]
-  --  https://github.com/Zeioth/markmap.nvim
+  --  https://github.com/zeioth/markmap.nvim
   --  Important: Make sure you have yarn in your PATH before running markmap.
   {
-    "Zeioth/markmap.nvim",
+    "zeioth/markmap.nvim",
     build = "yarn global add markmap-cli",
     cmd = { "MarkmapOpen", "MarkmapSave", "MarkmapWatch", "MarkmapWatchStop" },
     config = function(_, opts) require("markmap").setup(opts) end,
@@ -397,9 +335,9 @@ return {
 
   --  COMPILER ----------------------------------------------------------------
   --  compiler.nvim [compiler]
-  --  https://github.com/Zeioth/compiler.nvim
+  --  https://github.com/zeioth/compiler.nvim
   {
-    "Zeioth/compiler.nvim",
+    "zeioth/compiler.nvim",
     cmd = {
       "CompilerOpen",
       "CompilerToggleResults",
@@ -905,11 +843,8 @@ return {
         desc = "Auto generate C/C++ tags",
         callback = function()
           local is_c = vim.bo.filetype == "c" or vim.bo.filetype == "cpp"
-          if is_c then
-            vim.g.gutentags_enabled = 1
-          else
-            vim.g.gutentags_enabled = 0
-          end
+          if is_c then vim.g.gutentags_enabled = 1
+          else vim.g.gutentags_enabled = 0 end
         end,
       })
     end,

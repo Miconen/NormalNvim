@@ -1,4 +1,4 @@
-if vim.loader and vim.fn.has "nvim-0.9.1" == 1 then vim.loader.enable() end
+vim.loader.enable()
 
 for _, source in ipairs {
   "base.1-options",
@@ -6,8 +6,8 @@ for _, source in ipairs {
   "base.3-autocmds",
   "base.4-mappings",
 } do
-  local status_ok, fault = pcall(require, source)
-  if not status_ok then vim.api.nvim_err_writeln("Failed to load " .. source .. "\n\n" .. fault) end
+  local status_ok, error = pcall(require, source)
+  if not status_ok then vim.api.nvim_err_writeln("Failed to load " .. source .. "\n\n" .. error) end
 end
 
 if base.default_colorscheme then

@@ -4,7 +4,7 @@ return {
   -- tokyonight [theme]
   -- https://github.com/folke/tokyonight.nvim
   {
-    "Zeioth/tokyonight.nvim",
+    "zeioth/tokyonight.nvim",
     event = "User LoadColorSchemes",
     opts = {
       dim_inactive = false,
@@ -12,8 +12,20 @@ return {
         comments = { italic = true },
         keywords = { italic = true },
       },
+    }
+  },
+
+  --  astrotheme [theme]
+  --  https://github.com/AstroNvim/astrotheme
+  {
+    "AstroNvim/astrotheme",
+    event = "User LoadColorSchemes",
+    opts = {
+      palette = "astrodark",
+      plugins = { ["dashboard-nvim"] = true },
     },
   },
+
 
   -- cyberdream [theme]
   -- scottmckendry/cyberdream.nvim
