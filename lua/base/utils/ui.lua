@@ -116,12 +116,24 @@ end
 
 --- Toggle Precogntion
 function M.toggle_precognition()
-  local ok, precognition = pcall(require, "hardtime")
+  local ok, precognition = pcall(require, "precognition")
   if ok then
     precognition.toggle()
-    utils.notify(string.format("precognition %s", bool2str(precognition.is_plugin_enabled)))
+    -- utils.notify(string.format("precognition %s", bool2str(precognition.is_plugin_enabled)))
+    utils.notify "precognition toggled"
   else
     utils.notify "precognition not available"
+  end
+end
+
+--- Toggle copilot
+function M.toggle_copilot()
+  local ok, copilot = pcall(require, "copilot")
+  if ok then
+    copilot.toggle()
+    utils.notify(string.format("copilot %s", bool2str(copilot.is_plugin_enabled)))
+  else
+    utils.notify "copilot not available"
   end
 end
 

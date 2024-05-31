@@ -64,8 +64,11 @@ return {
   {
     "https://github.com/tris203/precognition.nvim",
     event = "User BaseFile",
-    config = function()
-      require("precognition").setup()
+    opts = {
+      startVisible = false,
+    },
+    config = function(_, opts)
+      require("precognition").setup(opts)
     end,
   }
 }

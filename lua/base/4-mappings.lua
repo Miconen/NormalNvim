@@ -38,8 +38,7 @@ local icons = {
   u = { desc = get_icon("Window", 1, true) .. "UI" },
   b = { desc = get_icon("Tab", 1, true) .. "Buffers" },
   bs = { desc = get_icon("Sort", 1, true) .. "Sort Buffers" },
-  c = { desc = get_icon("Robot", 1, true) .. "Copilot" },
-  cc = { desc = get_icon("Run", 1, true) .. "Compiler" },
+  c = { desc = get_icon("Run", 1, true) .. "Compiler" },
   d = { desc = get_icon("Debugger", 1, true) .. "Debugger" },
   tt = { desc = get_icon("Test", 1, true) .. "Test" },
   dc = { desc = get_icon("Docs", 1, true) .. "Docs" },
@@ -602,7 +601,7 @@ if is_available "telescope.nvim" then
 
   -- extra - compiler
   if is_available "compiler.nvim" and is_available "overseer.nvim" then
-    maps.n["<leader>m"] = icons.cc
+    maps.n["<leader>m"] = icons.c
     maps.n["<leader>mm"] = {
       function() vim.cmd "CompilerOpen" end,
       desc = "Open compiler",
@@ -866,17 +865,9 @@ end
 
 -- copilot.lua -------------------------------------------------------------
 if is_available "copilot.lua" then
-  maps.n["<leader>c"] = icons.c
+  local description = get_icon("Robot", 1, true) .. "Copilot"
 
-  maps.n["<leader>ce"] = {
-    "<cmd>Copilot enable<CR><cmd>Copilot attach<CR>",
-    desc = "Enable copilot",
-  }
-
-  maps.n["<leader>cd"] = {
-    "<cmd>Copilot disable<CR>",
-    desc = "Disable copilot",
-  }
+  maps.n["<leader>c"] = { ui.toggle_copilot, desc = description }
 end
 
 -- mason-lspconfig.nvim [lsp] ----------------------------------------------
