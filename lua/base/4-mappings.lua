@@ -155,12 +155,6 @@ maps.n["<leader>ub"] = { ui.toggle_background, desc = "Background" }
 if is_available "nvim-cmp" then
   maps.n["<leader>uc"] = { ui.toggle_cmp, desc = "Autocompletion" }
 end
-if is_available "hardtime.nvim" then
-  maps.n["<leader>uh"] = { ui.toggle_hardtime, desc = "Hardtime" }
-end
-if is_available "precognition.nvim" then
-  maps.n["<leader>up"] = { ui.toggle_precognition, desc = "Precognition" }
-end
 if is_available "nvim-colorizer.lua" then
   maps.n["<leader>uC"] =
   { "<cmd>ColorizerToggle<cr>", desc = "color highlight" }
@@ -327,6 +321,24 @@ if vim.fn.executable "gitui" == 1 then -- if gitui exists, show it
     desc = "ToggleTerm gitui",
   }
 end
+
+-- Query for plugin availability
+maps.n["<leader>sA"] = {
+  function()
+    -- Get user input
+    vim.ui.input({ prompt = "Search: " }, function(search)
+      if search then
+        -- Search for the input
+        local available = is_available(search)
+        require("base.utils").notify(
+          "Plugin available: " .. tostring(available),
+          vim.log.levels.INFO
+        )
+      end
+    end)
+  end,
+  desc = "Query plugin availability"
+}
 
 -- file browsers ------------------------------------
 -- oil.nvim

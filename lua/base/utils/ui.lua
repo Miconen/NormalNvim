@@ -103,29 +103,6 @@ function M.toggle_lsp_signature()
   utils.notify(string.format("lsp signature %s", bool2str(state)))
 end
 
---- Toggle Hardtime
-function M.toggle_hardtime()
-  local ok, hardtime = pcall(require, "hardtime")
-  if ok then
-    hardtime.toggle()
-    utils.notify(string.format("hardtime %s", bool2str(hardtime.is_plugin_enabled)))
-  else
-    utils.notify "hardtime not available"
-  end
-end
-
---- Toggle Precogntion
-function M.toggle_precognition()
-  local ok, precognition = pcall(require, "precognition")
-  if ok then
-    precognition.toggle()
-    -- utils.notify(string.format("precognition %s", bool2str(precognition.is_plugin_enabled)))
-    utils.notify "precognition toggled"
-  else
-    utils.notify "precognition not available"
-  end
-end
-
 --- Toggle copilot
 function M.toggle_copilot()
   local ok, copilot = pcall(require, "copilot")
