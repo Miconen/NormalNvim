@@ -1,9 +1,4 @@
--- HELLO, welcome to NormalNvim!
--- ----------------------------------------
--- Here you can define your nvim variables.
--- ----------------------------------------
-
--- NormalNvin lua globals
+-- NormalNvim lua globals
 _G.base = {}
 
 -- Theme
