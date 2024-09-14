@@ -11,7 +11,8 @@ for _, source in ipairs {
 end
 
 if base.default_colorscheme then
-  if not pcall(vim.cmd.colorscheme, base.default_colorscheme) then
+  local status_ok = pcall(vim.cmd.colorscheme, base.default_colorscheme)
+  if not status_ok then
     require("base.utils").notify(
       "Error setting up colorscheme: " .. base.default_colorscheme,
       vim.log.levels.ERROR
